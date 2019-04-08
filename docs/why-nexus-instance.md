@@ -122,7 +122,7 @@ Interfaces exist to enforce the implementation
 of behavior. Interfaces can also implement behavior,
 but this is not recommended because interfaces are
 meant to enforce the implementation of a behavior without
-implmenting it.
+implementing it.
 
 Example:
 ```lua
@@ -239,10 +239,9 @@ print(TestObject:GetValue()) --"Value is read-only."
     This was added in V.1.1.0. Make sure you are
     using this version or later.
 
-Most of the metamethods can be implemented
-into classes directly. This is mostly for
-`__tostring`, but can be used for any other
-Lua metamethod that isn't `__index` or `__newindex`.
+Property changes can be validated before set. This
+allows for modifying of inputs to correct values,
+or throwing errors if the new property is invalid.
 
 Example:
 ```lua
