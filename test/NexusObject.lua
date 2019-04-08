@@ -408,6 +408,90 @@ NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSub",function(UnitTest)
 	UnitTest:AssertEquals(CuT.super:GetValue(),"Test","Function isn't returning correctly.")
 end)
 
+--[[
+Test extending with a property stored in the superclass.
+--]]
+NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSuper",function(UnitTest)
+	local NexusObject = require(NexusObjectModule)
+	
+	--Extend the NexusObject class.
+	local ExtendedObject1 = NexusObject:Extend()
+	ExtendedObject1:SetClassName("ExtendedClass1")
+	
+	--Override the constructor.
+	function ExtendedObject1:__new()
+		self:InitializeSuper()
+		self.Value = "Test"
+	end
+	
+	--Returns the test value.
+	function ExtendedObject1:GetValue()
+		return self.Value
+	end
+	
+	--Extend the ExtendedObject1 class.
+	local ExtendedObject2 = ExtendedObject1:Extend()
+	ExtendedObject2:SetClassName("ExtendedClass2")
+	
+	--Override the constructor.
+	function ExtendedObject2:__new()
+		self:InitializeSuper()
+	end
+	
+	--Create the object.
+	local CuT = ExtendedObject2.new()
+	
+	--Run the assertions.
+	UnitTest:AssertEquals(CuT.Value,"Test","Value isn't set.")
+	UnitTest:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
+	UnitTest:AssertEquals(CuT:GetValue(),"Test","Value isn't set.")
+end)
+
+--[[
+Test adding metamethods that aren't __index or __newindex.
+--]]
+NexusUnitTesting:RegisterUnitTest("Metamethods",function(UnitTest)
+	local NexusObject = require(NexusObjectModule)
+	
+	--Extend the NexusObject class.
+	local BasicExtendedObject = NexusObject:Extend()
+	BasicExtendedObject:SetClassName("BasicExtendedObject")
+	local ExtendedObject = NexusObject:Extend()
+	ExtendedObject:SetClassName("ExtendedObject")
+	
+	--Create a constructor.
+	function ExtendedObject:__new(Value)
+		self.Value = Value
+	end
+	
+	--Add an equals method.
+	function ExtendedObject:__eq(OtherObject)
+		return self.Value == OtherObject.Value
+	end
+	
+	--Add a tostring method.
+	function ExtendedObject:__tostring()
+		return self.ClassName.." "..self.Value
+	end
+	
+	--Create the object.
+	local CuT1 = NexusObject.new()
+	local CuT2 = BasicExtendedObject.new()
+	local CuT3 = ExtendedObject.new(1)
+	local CuT4 = ExtendedObject.new(1)
+	local CuT5 = ExtendedObject.new(2)
+	
+	--Run the assertions.
+	UnitTest:AssertEquals(string.sub(tostring(CuT1),1,13),"NexusObject: ","tostring() is incorrect.")
+	UnitTest:AssertEquals(string.sub(tostring(CuT2),1,21),"BasicExtendedObject: ","tostring() isn't inherited.")
+	UnitTest:AssertEquals(tostring(CuT3),"ExtendedObject 1","tostring() is incorrect.")
+	UnitTest:AssertEquals(tostring(CuT4),"ExtendedObject 1","tostring() is incorrect.")
+	UnitTest:AssertEquals(tostring(CuT5),"ExtendedObject 2","tostring() is incorrect.")
+	UnitTest:AssertEquals(CuT3,CuT4,"Objects aren't equals")
+	UnitTest:AssertNotEquals(CuT3,CuT5,"Objects are equals")
+	UnitTest:AssertNotEquals(CuT4,CuT5,"Objects are equals")
+end)
+
 
 
 --Return true to prevent a ModuleScript error.

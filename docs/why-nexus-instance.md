@@ -111,6 +111,49 @@ print(TestObject:GetValue()) --2
 print(TestObject:GetValuePlusOne()) --3
 ```
 
+
+## Interfaces
+
+!!! note
+    This was added in V.1.1.0. Make sure you are
+    using this version or later.
+
+Interfaces exist to enforce the implementation
+of behavior. Interfaces can also implement behavior,
+but this is not recommended because interfaces are
+meant to enforce the implementation of a behavior without
+implmenting it.
+
+Example:
+```lua
+local NexusObject = game:GetService("ReplicatedStorage"):WaitForChild("NexusObject")
+local NexusInstance = require(NexusObject:WaitForChild("NexusInstance"))
+local NexusInterface = require(NexusObject:WaitForChild("NexusInterface"))
+local TestClass = NexusInstance:Extend()
+TestClass:SetClassName("TestClass")
+
+--Create an interface.
+local TestInterface = NexusInterface:Extend()
+TestInterface:SetClassName("TestInterface")
+TestInterface:MustImplement("Test")
+TestClass:Implements(TestInterface)
+
+--[[
+Implement the test function. Not doing
+this will result in an error for not
+implementing the function test.
+--]]
+function TestClass:Test()
+	--Implementation
+end
+
+
+--Create an instance of the class.
+local TestObject = TestClass.new()
+print(TestObject:IsA("TestClass")) --true
+print(TestObject:IsA("TestInterface")) --true
+```
+
 ## Changed Event
 Nexus Instance provides both a `NexusObject` and
 a `NexusInstance` class. The `NexusInstance` class
@@ -188,4 +231,71 @@ local TestObject = TestClass.new(2)
 print(TestObject:GetValue()) --2
 TestObject.Value = 3
 print(TestObject:GetValue()) --"Value is read-only."
+```
+
+## Property Validation
+
+!!! note
+    This was added in V.1.1.0. Make sure you are
+    using this version or later.
+
+Most of the metamethods can be implemented
+into classes directly. This is mostly for
+`__tostring`, but can be used for any other
+Lua metamethod that isn't `__index` or `__newindex`.
+
+Example:
+```lua
+local NexusObject = game:GetService("ReplicatedStorage"):WaitForChild("NexusObject")
+local NexusInstance = require(NexusObject:WaitForChild("NexusInstance"))
+local TypePropertyValidator = require(NexusObject:WaitForChild("PropertyValidator"):WaitForChild("NexusInstance"))
+local TestClass = NexusInstance:Extend()
+
+--Create and add a property validator.
+local TestObject = TestClass.new()
+local Valdiator = TypePropertyValidator.new("CFrame")
+TestObject:AddPropertyValidator("Location",Validator)
+
+--Set the property.
+TestObject.Location = CFrame.new()
+TestObject.Location = "Test" --Throws an error
+```
+
+## Metamethods
+
+!!! note
+    This was added in V.1.1.0. Make sure you are
+    using this version or later.
+
+Most of the metamethods can be implemented
+into classes directly. This is mostly for
+`__tostring`, but can be used for any other
+Lua metamethod that isn't `__index` or `__newindex`.
+
+Example:
+```lua
+local NexusObject = game:GetServic exusObject:WaitForChild("NexusInstance"))
+local TestClass = NexusInstance:Extend()
+
+--[[
+Constructor for TestClass.
+--]]
+function TestClass:__new(Value)
+	self:InitializeSuper()
+	
+	--Set the value.
+	self.Value = Value
+	self:LockProperty("Value")
+end
+
+--[[
+Returns the object as a string.
+--]]
+function TestClass:__tostring()
+	return "Test: "..self.Value
+end
+
+--Create an instance of the class.
+local TestObject = TestClass.new(2)
+print(tostring(TestObject)) --"Test: 2"
 ```

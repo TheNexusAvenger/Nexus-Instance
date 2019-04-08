@@ -42,7 +42,7 @@ print(ExtendedClass:IsA("Instance")) --false
 ## Overriding the Constructor
 Objects can be created by calling `.new(...)`, which
 will handle the new class. To handle a custom constructor,
-`NexusObject::__new" can be overriden. To set up the super
+`NexusObject::__new` can be overriden. To set up the super
 class, `NexusObject::InitializeSuper` can be called. By default,
 the default constructor calls `NexusObject::InitializeSuper`
 with the same arguments.

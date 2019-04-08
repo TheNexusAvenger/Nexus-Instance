@@ -10,6 +10,8 @@ local CLASS_NAME = "NexusInstance"
 
 
 local NexusObject = require(script.Parent:WaitForChild("NexusObject"))
+local NexusEventCreator = require(script.Parent:WaitForChild("Event"):WaitForChild("NexusEventCreator"))
+
 local NexusInstance = NexusObject:Extend()
 NexusInstance:SetClassName(CLASS_NAME)
 
@@ -46,14 +48,16 @@ Sets up the internal properties.
 --]]
 function NexusInstance:__InitInternalProperties()
 	--Set up the properties.
+	self.__PropertyValidators = {}
 	self.__HiddenProperties = {}
 	self.__LockedProperties = {}
 	self.__BlockNextChangedSignals = {}
 	self.__PropertyChanged = {}
-	self.__ChangedEvent = Instance.new("BindableEvent")
-	self.Changed = self.__ChangedEvent.Event
+	self.__ChangedEvent = NexusEventCreator:CreateEvent()
+	self.Changed = self.__ChangedEvent
 	
 	--Lock the internal states.
+	self:LockProperty("__PropertyValidators")
 	self:LockProperty("__HiddenProperties")
 	self:LockProperty("__LockedProperties")
 	self:LockProperty("__BlockNextChangedSignals")
@@ -69,6 +73,7 @@ Sets up the meta methods.
 function NexusInstance:__InitMetaMethods()
 	--Set up the internal state.
 	local InternalProperties = {}
+	local PropertyValidators = self.__PropertyValidators
 	local HiddenProperties = self.__HiddenProperties
 	local LockedProperties = self.__LockedProperties
 	local BlockNextChangedSignals = self.__BlockNextChangedSignals
@@ -84,11 +89,19 @@ function NexusInstance:__InitMetaMethods()
 		end
 		
 		--Return if the new and old values are the same.
-		if self[Index] == Value then --TODO: Causes stack overflow
+		if self[Index] == Value then
 			return
 		end
 		
-		--Change the property..
+		--Validate the value.
+		local Validators = self.__PropertyValidators[Index]
+		if Validators then
+			for _,Validator in pairs(Validators) do
+				Value = Validator:ValidateChange(self,Index,Value)
+			end
+		end
+		
+		--Change the property.
 		rawset(InternalProperties,Index,Value)
 		
 		--Return if the event is hidden.
@@ -115,6 +128,16 @@ function NexusInstance:__InitMetaMethods()
 	Metatable.__index = function(_,Index)
 		return rawget(InternalProperties,Index) or ExistingIndex(self,Index)
 	end
+end
+
+--[[
+Adds a validator for a given property.
+--]]
+function NexusInstance:AddPropertyValidator(PropertyName,Validator)
+	if not self.__PropertyValidators[PropertyName] then
+		self.__PropertyValidators[PropertyName] = {}
+	end
+	table.insert(self.__PropertyValidators[PropertyName],Validator)
 end
 
 --[[
@@ -145,11 +168,11 @@ Returns a changed signal specific to the property.
 function NexusInstance:GetPropertyChangedSignal(PropertyName)
 	--If there is no event created, create a bindable event.
 	if not self.__PropertyChanged[PropertyName] then
-		self.__PropertyChanged[PropertyName] = Instance.new("BindableEvent")
+		self.__PropertyChanged[PropertyName] = NexusEventCreator:CreateEvent()
 	end
 	
 	--Return the event.
-	return self.__PropertyChanged[PropertyName].Event
+	return self.__PropertyChanged[PropertyName]
 end
 
 

@@ -14,10 +14,22 @@ nav:
   - Why Nexus Instance: why-nexus-instance.md
   - Usage: 
     - Extending Classes: getting-started/extending-classes.md
+    - Interfaces: getting-started/interfaces.md
     - Classes:
       - NexusObject: getting-started/classes/nexusobject.md
       - NexusInstance: getting-started/classes/nexusinstance.md
+      - NexusInterface: getting-started/classes/nexusinterface.md
+      - Event:
+        - NexusEventCreator: getting-started/classes/event/nexuseventcreator.md
+        - NexusEvent: getting-started/classes/event/nexusevent.md
+        - NexusConnection: getting-started/classes/event/nexusconnection.md
+        - RobloxEvent: getting-started/classes/event/robloxevent.md
+        - LuaEvent: getting-started/classes/event/luaevent.md
+      - PropertyValidator:
+        - NexusPropertyValidator: getting-started/classes/propertyvalidator/nexuspropertyvalidator.md
+        - TypePropertyValidator: getting-started/classes/propertyvalidator/typepropertyvalidator.md
   - Contributing: contributing.md
 
 markdown_extensions:
   - admonition
+  - codehilite

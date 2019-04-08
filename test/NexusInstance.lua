@@ -9,12 +9,12 @@ local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
 local NexusObjectFolder = Sources:WaitForChild("NexusObject")
 local NexusInstanceModule = NexusObjectFolder:WaitForChild("NexusInstance")
 
+local NexusInstance = require(NexusInstanceModule)
+
 --[[
 Test the constructor.
 --]]
 NexusUnitTesting:RegisterUnitTest("Constructor",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -29,8 +29,6 @@ end)
 Test the LockProperty function.
 --]]
 NexusUnitTesting:RegisterUnitTest("LockProperty",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -49,8 +47,6 @@ end)
 Test the LockProperty function with a class and subclass.
 --]]
 NexusUnitTesting:RegisterUnitTest("LockPropertySubClass",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Extend NexusInstance.
 	local TestClass = NexusInstance:Extend()
 	
@@ -77,8 +73,6 @@ end)
 Test the HidePropertyChanges function.
 --]]
 NexusUnitTesting:RegisterUnitTest("HidePropertyChanges",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -99,8 +93,6 @@ end)
 Test the HideNextPropertyChange function.
 --]]
 NexusUnitTesting:RegisterUnitTest("HideNextPropertyChange",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -127,8 +119,6 @@ end)
 Test the GetPropertyChangedSignal function.
 --]]
 NexusUnitTesting:RegisterUnitTest("GetPropertyChangedSignal",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -153,8 +143,6 @@ end)
 Test the GetPropertyChangedSignal function after calling HidePropertyChanges.
 --]]
 NexusUnitTesting:RegisterUnitTest("GetPropertyChangedSignalHiddenProperty",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -180,8 +168,6 @@ end)
 Test the Changed event.
 --]]
 NexusUnitTesting:RegisterUnitTest("Changed",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Create the object.
 	local CuT = NexusInstance.new()
 	
@@ -204,8 +190,6 @@ end)
 Test the Changed event with a subclass.
 --]]
 NexusUnitTesting:RegisterUnitTest("ChangedSubClass",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Extend NexusInstance.
 	local TestClass = NexusInstance:Extend()
 	
@@ -236,8 +220,6 @@ end)
 Test the Changed event with a super class.
 --]]
 NexusUnitTesting:RegisterUnitTest("ChangedSuperClass",function(UnitTest)
-	local NexusInstance = require(NexusInstanceModule)
-	
 	--Extend NexusInstance.
 	local TestClass = NexusInstance:Extend()
 	
