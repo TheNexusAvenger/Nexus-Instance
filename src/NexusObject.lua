@@ -50,6 +50,18 @@ local function RawToString(Table)
 	return String
 end
 
+--[[
+Returns the first object from the interfaces.
+--]]
+local function GetFromInterfaces(Object,Class,Index)
+	for _,Interface in pairs(Class:GetInterfaces(Class)) do
+		local InterfaceReturn = Interface[Index]
+		if InterfaceReturn then
+			return InterfaceReturn
+		end
+	end
+end
+
 
 
 --[[
@@ -59,11 +71,18 @@ as a base.
 function NexusObject.new(...)
 	--Create the object.
 	local self = {}
+	self.class = NexusObject
+	self.object = self
 	
 	--Set up the metatable.
 	local Metatable = {}
-	Metatable.__index = function(self,Index)
-		return rawget(NexusObject,Index)
+	Metatable.__index = function(_,Index)
+		local RawGet = rawget(self,Index)
+		if RawGet then
+			return RawGet
+		end
+		
+		return NexusObject[Index]
 	end
 	setmetatable(self,Metatable)
 	
@@ -73,7 +92,7 @@ function NexusObject.new(...)
 			return self[Name](self,...)
 		end
 	end
-		
+	
 	--Run the constructor.
 	self:__new(...)
 	
@@ -98,13 +117,58 @@ function NexusObject:__classextended(OtherClass)
 end
 
 --[[
-Called after the constructor when another object
-extends the object. The primary purpose is to be
-able to manipulate the metatables of a class for
-something like NexusInstance.
+Creates an __index metamethod for an object.
 --]]
-function NexusObject:__extended(OtherObject)
+function NexusObject:__createindexmethod(Object,Class,RootClass)
+	--Set the root class.
+	if not RootClass then
+		RootClass = Class
+	end
 	
+	--Get the method.
+	if Class.super then
+		--[[
+		Returns the value for an index of an object.
+		--]]
+		return function(_,Index)
+			if Index == "super" then
+				--Create a temporary object.
+				local TempObject = {}
+				TempObject.object = Object
+				
+				--Set the metatable to redirect the next "super".
+				local Metatable = {}
+				Metatable.__index = RootClass:__createindexmethod(Object,Class.super,RootClass)
+				Metatable.__newindex = function(_,Index,Value)
+					Object[Index] = Value
+				end
+				setmetatable(TempObject,Metatable)
+				
+				--Return the temporary object.
+				return TempObject
+			else
+				--Get the normal property from the object or class.
+				local RawReturn = rawget(Object,Index)
+				if RawReturn ~= nil then
+					return RawReturn
+				end
+				
+				return Class[Index]
+			end
+		end
+	else
+		--[[
+		Returns the value for an index of an object.
+		--]]
+		return function(_,Index)
+			local RawReturn = rawget(Object,Index)
+			if RawReturn ~= nil then
+				return RawReturn
+			end
+			
+			return Class[Index]
+		end
+	end
 end
 
 --[[
@@ -119,48 +183,10 @@ end
 Initializes the super class.
 --]]
 function NexusObject:InitializeSuper(...)
-	--Return if there is no super.
-	if not self.super then
-		return
+	if self.super then
+		self.super:__new(...)
 	end
-	
-	--Create the super object.
-	local super = {}
-	local BaseSuper = self.super
-	
-	local Metatable = {}
-	Metatable.__newindex = self
-	Metatable.__index = function(_,Index)
-		--Return the super's return.
-		local SuperReturn = rawget(super,Index) or BaseSuper[Index]
-		if SuperReturn then
-			return SuperReturn
-		end
-		
-		--Return the instance's return.
-		local SubReturn = self[Index]
-		if SubReturn then
-			return SubReturn
-		end
-		
-		--Return the super's super return.
-		local SuperInstance = rawget(BaseSuper,"super")
-		if SuperInstance then
-			local SuperInstanceReturn = SuperInstance[Index]
-			if SuperInstanceReturn then
-				return SuperInstanceReturn
-			end
-		end
-	end
-	setmetatable(super,Metatable)
-	
-	--Set the super class and run the constructor of the super class.
-	rawset(self,"super",super)
-	self.super:__new(...)
-	self.super:__extended(self)
 end
-
-
 
 --[[
 Sets the class name of the class. Should be
@@ -184,6 +210,9 @@ function NexusObject:Implements(Interface)
 	table.insert(self.Interfaces,Interface)
 end
 
+
+
+
 --[[
 Returns a list of the interfaces that the
 class implements. This includes ones implemented
@@ -192,7 +221,8 @@ by super classes.
 function NexusObject:GetInterfaces()
 	--Get the super class's interfaces.
 	local Interfaces = {}
-	if self.super and self.super ~= self then
+	--if self.super and self.super ~= self then
+	if self.super then
 		Interfaces = self.super:GetInterfaces()
 	end
 	
@@ -227,7 +257,7 @@ function NexusObject:IsA(ClassName)
 	end
 	
 	--If a super class exists, return the result of the super.
-	if self.super and self.super.ClassName ~= self.ClassName then
+	if self.super then --and self.super.ClassName ~= self.ClassName then
 		return self.super:IsA(ClassName)
 	end
 	
@@ -235,35 +265,28 @@ function NexusObject:IsA(ClassName)
 	return false
 end
 
-
-
 --[[
 Extends a Nexus Instance class and returns the inherited class.
 --]]
 function NexusObject:Extend()
 	local super = self
 	local ExtendedClass = {
-		super = super
+		super = super,
 	}
 	
 	--[[
 	Creates an instance of the class.
 	--]]
 	function ExtendedClass.new(...)
+		--Create the object.
 		local self = {}
-		local Metatable = {}
+		self.class = ExtendedClass
+		self.object = self
 		
-		--[[
-		Returns the first object from the interfaces.
-		--]]
-		local function GetFromInterfaces(Index)
-			for _,Interface in pairs(ExtendedClass:GetInterfaces(self)) do
-				local InterfaceReturn = Interface[Index]
-				if InterfaceReturn then
-					return InterfaceReturn
-				end
-			end
-		end
+		--Set up the metatable.
+		local Metatable = {}
+		Metatable.__index = ExtendedClass:__createindexmethod(self,ExtendedClass)
+		setmetatable(self,Metatable)
 		
 		--Add the metamethod passthrough.
 		for _,Name in pairs(METATABLE_PASSTHROUGH) do
@@ -271,26 +294,6 @@ function NexusObject:Extend()
 				return self[Name](self,...)
 			end
 		end
-		
-		--Set up the metatable.
-		local GetInterfacesFunction
-		Metatable.__index = function(_,Index)
-			--Return the instance's return.
-			local BaseInstanceReturn = rawget(self,Index) or rawget(ExtendedClass,Index)
-			if BaseInstanceReturn then
-				return BaseInstanceReturn
-			end
-			
-			--Return the instance's interface reutrn.
-			local InterfaceReturn = GetFromInterfaces(Index)
-			if InterfaceReturn then
-				return InterfaceReturn
-			end
-			
-			--Return the static super class's return.
-			return super[Index]
-		end
-		setmetatable(self,Metatable)
 		
 		--Run the constructor.
 		self:__new(...)
@@ -325,7 +328,7 @@ function NexusObject:Extend()
 	function ExtendedClass:__new(...)
 		self:InitializeSuper(...)
 	end
-
+	
 	--[[
 	Called after extending when another class extends
 	the class. The purpose of this is to add attributes
@@ -336,31 +339,30 @@ function NexusObject:Extend()
 		self.super:__classextended(OtherClass)
 	end
 	
-	--[[
-	Called after the constructor when another object
-	extends the object. The primary purpose is to be
-	able to manipulate the metatables of a class for
-	something like NexusInstance.
-	--]]
-	function ExtendedClass:__extended(OtherObject)
-		super:__extended(OtherObject)
-	end
-	
-	--Set up the class.
+	--Set up the metatable for indexing.
 	local Metatable = {}
-	setmetatable(ExtendedClass,Metatable)
 	Metatable.__index = function(_,Index)
-		return rawget(ExtendedClass,Index) or super[Index]
+		--Return the value for the class.
+		local ClassReturn = rawget(ExtendedClass,Index)
+		if ClassReturn ~= nil then
+			return ClassReturn
+		end
+		
+		--Return the value for the super classes.
+		local SuperClassReturn = super[Index]
+		if SuperClassReturn ~= nil then
+			return SuperClassReturn
+		end
+		
+		--Return the value for the interfaces.
+		return GetFromInterfaces(ExtendedClass,ExtendedClass,Index)
 	end
-	
-	Metatable.__tostring = function()
-		return "NexusObject."..tostring(ExtendedClass.ClassName)
-	end
+	setmetatable(ExtendedClass,Metatable)
 	
 	--Extend the class.
-	self:__classextended(ExtendedClass)
+	super:__classextended(ExtendedClass)
 	
-	--Return the inherited class.
+	--Return the extended class.
 	return ExtendedClass
 end
 

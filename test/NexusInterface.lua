@@ -6,17 +6,16 @@ Unit tests for the NexusInterface class.
 local NexusUnitTesting = require("NexusUnitTesting")
 
 local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusObjectFolder = Sources:WaitForChild("NexusObject")
-local NexusObjectModule = NexusObjectFolder:WaitForChild("NexusObject")
-local NexusInterfaceModule = NexusObjectFolder:WaitForChild("NexusInterface")
+local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusObject = require(NexusInstanceFolder:WaitForChild("NexusObject"))
+local NexusInterface = require(NexusInstanceFolder:WaitForChild("NexusInterface"))
+
+
 
 --[[
 Test creating an interface.
 --]]
 NexusUnitTesting:RegisterUnitTest("Creation",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
 	--Extend the interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -38,11 +37,28 @@ NexusUnitTesting:RegisterUnitTest("Creation",function(UnitTest)
 end)
 
 --[[
+Tests that interfaces don't go down.
+--]]
+NexusUnitTesting:RegisterUnitTest("InterfaceNotPropegatingDownward",function(UnitTest)
+	--Create a class and interface.
+	local CuT = NexusInterface:Extend()
+	CuT:SetClassName("TestInterface")
+	local TestClass = NexusObject:Extend()
+	TestClass:SetClassName("TestObject")
+	TestClass:Implements(CuT)
+	
+	--Assert NexusObject was unaffected.
+	local Object1,Object2 = TestClass.new(),NexusObject.new()
+	UnitTest:AssertEquals(#Object1:GetInterfaces(),1,"Interface not added.")
+	UnitTest:AssertTrue(Object1:IsA("TestInterface"),"Interface not implemented.")
+	UnitTest:AssertEquals(#Object2:GetInterfaces(),0,"Interface added to NexusObject.")
+	UnitTest:AssertFalse(Object2:IsA("TestInterface"),"Interface added to NexusObject.")
+end)
+
+--[[
 Tests having classes implement a non-interface fails.
 --]]
 NexusUnitTesting:RegisterUnitTest("NonInterfaceFails",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Create a class and interface.
 	local TestClass = NexusObject:Extend()
 	TestClass:SetClassName("TestObject")
@@ -55,14 +71,11 @@ NexusUnitTesting:RegisterUnitTest("NonInterfaceFails",function(UnitTest)
 	--Create the class.
 	TestClass.new()
 end)
-	
+
 --[[
 Tests having classes implement an interface.
 --]]
 NexusUnitTesting:RegisterUnitTest("ImplementingInterface",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
 	--Create a class and interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -95,9 +108,6 @@ end)
 Tests having classes implement multiple interfaces.
 --]]
 NexusUnitTesting:RegisterUnitTest("MultipleInterfaces",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
 	--Create a class and interface.
 	local CuT1 = NexusInterface:Extend()
 	CuT1:SetClassName("TestInterface1")
@@ -143,12 +153,6 @@ end)
 Tests interfaces propegating to subclasses.
 --]]
 NexusUnitTesting:RegisterUnitTest("InterfacePropegation",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
 	--Create a class and interface.
 	local CuT1 = NexusInterface:Extend()
 	CuT1:SetClassName("TestInterface1")
@@ -199,12 +203,6 @@ end)
 Tests having interfaces implement behavior (although not recommended).
 --]]
 NexusUnitTesting:RegisterUnitTest("InterfaceWithImplementation",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
-	local NexusObject = require(NexusObjectModule)
-	local NexusInterface = require(NexusInterfaceModule)
-	
 	--Create a class and interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -218,12 +216,21 @@ NexusUnitTesting:RegisterUnitTest("InterfaceWithImplementation",function(UnitTes
 		return true
 	end
 	
+	--Implement a test function that will be overriden.
+	function CuT:TestFunction3()
+		return false
+	end
+	
 	--Assert an error occurs for not implementing the interface.
 	UnitTest:AssertErrors(function()
 		TestClass.new()
 	end,"Error not thrown for unimplemented behavior.")
 
-	--Implement the function.
+	--Implement the functions.
+	function TestClass:TestFunction2()
+		return true
+	end
+	
 	function TestClass:TestFunction2()
 		return true
 	end
@@ -232,8 +239,9 @@ NexusUnitTesting:RegisterUnitTest("InterfaceWithImplementation",function(UnitTes
 	local TestObject = TestClass.new()
 	UnitTest:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
 	UnitTest:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
+	UnitTest:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
 end)
-
+	
 
 
 --Return true to prevent a ModuleScript error.

@@ -6,8 +6,8 @@ Unit tests for the NexusConnection class.
 local NexusUnitTesting = require("NexusUnitTesting")
 
 local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusObjectFolder = Sources:WaitForChild("NexusObject")
-local EventFolder = NexusObjectFolder:WaitForChild("Event")
+local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local EventFolder = NexusInstanceFolder:WaitForChild("Event")
 local NexusConnectionModule = EventFolder:WaitForChild("NexusConnection")
 
 --[[

@@ -7,8 +7,8 @@ Unit tests for the NexusObject class.
 local NexusUnitTesting = require("NexusUnitTesting")
 
 local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusObjectFolder = Sources:WaitForChild("NexusObject")
-local NexusObjectModule = NexusObjectFolder:WaitForChild("NexusObject")
+local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusObject = require(NexusInstanceFolder:WaitForChild("NexusObject"))
 
 
 
@@ -16,8 +16,6 @@ local NexusObjectModule = NexusObjectFolder:WaitForChild("NexusObject")
 Test the constructor.
 --]]
 NexusUnitTesting:RegisterUnitTest("Constructor",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Create the object.
 	local CuT = NexusObject.new()
 	
@@ -25,34 +23,13 @@ NexusUnitTesting:RegisterUnitTest("Constructor",function(UnitTest)
 	UnitTest:AssertEquals(CuT.ClassName,"NexusObject","ClassName isn't properly set.")
 	UnitTest:AssertTrue(CuT:IsA("NexusObject"),"IsA isn't properly registering.")
 	UnitTest:AssertFalse(CuT:IsA("BasePart"),"IsA returned true for an invalid class name.")
-end)
-
---[[
-Test overriding the constructor.
---]]
-NexusUnitTesting:RegisterUnitTest("ConstructorOverride",function(UnitTest)
-	--Require a clone of NexusObject (requires the plugin or command line).
-	local NexusObject = require(NexusObjectModule)
-	
-	--Override the constructor.
-	function NexusObject:__new()
-		--Pass the unit test.
-		UnitTest:Pass()
-	end
-	
-	--Create the object.
-	local CuT = NexusObject.new()
-	
-	--Fail the test if the constructor wasn't called.
-	UnitTest:Fail("Constructor not overriden")
+	UnitTest:AssertSame(CuT.object,CuT,"object is incorrect.")
 end)
 
 --[[
 Test that subclasses get a clear constructor.
 --]]
 NexusUnitTesting:RegisterUnitTest("ConstructorCleared",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	local NewCalled = 0
@@ -79,8 +56,6 @@ end)
 Test the Extend function.
 --]]
 NexusUnitTesting:RegisterUnitTest("Extend",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	ExtendedObject:SetClassName("ExtendedClass")
@@ -94,7 +69,7 @@ NexusUnitTesting:RegisterUnitTest("Extend",function(UnitTest)
 	
 	--Run the assertions.
 	UnitTest:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
-	UnitTest:AssertEquals(CuT.super,NexusObject,"Super isn't set correctly.")
+	UnitTest:AssertNotNil(CuT.super,"Super isn't set.")
 	UnitTest:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
 end)
 
@@ -102,8 +77,6 @@ end)
 Test the Extend function with super class functions.
 --]]
 NexusUnitTesting:RegisterUnitTest("ExtendWithFunctions",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	
@@ -142,8 +115,6 @@ end)
 Test the Extend function with super class functions without initializing the super.
 --]]
 NexusUnitTesting:RegisterUnitTest("ExtendWithFunctionsNoSuper",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	
@@ -169,15 +140,13 @@ NexusUnitTesting:RegisterUnitTest("ExtendWithFunctionsNoSuper",function(UnitTest
 	
 	--Run the assertions.
 	UnitTest:AssertEquals(CuT:Test(),"Test1","Test() isn't properly set.")
-	UnitTest:AssertEquals(CuT.super,ExtendedObject1,"super isn't properly set.")
+	UnitTest:AssertNotNil(CuT.super,"super isn't properly set.")
 end)
 
 --[[
 Test the InitializeSuper function.
 --]]
 NexusUnitTesting:RegisterUnitTest("SetClassName",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	ExtendedObject:SetClassName("ExtendedClass")
@@ -194,8 +163,6 @@ end)
 Test the InitializeSuper function.
 --]]
 NexusUnitTesting:RegisterUnitTest("InitializeSuper",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	ExtendedObject:SetClassName("ExtendedClass")
@@ -219,8 +186,6 @@ end)
 Test extending twice.
 --]]
 NexusUnitTesting:RegisterUnitTest("DoubleExtends",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -254,8 +219,6 @@ end)
 Test extending twice with a parameters.
 --]]
 NexusUnitTesting:RegisterUnitTest("DoubleExtendsWithParameter",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -291,8 +254,6 @@ end)
 Test extending twice with a custom method implemented.
 --]]
 NexusUnitTesting:RegisterUnitTest("ExtendsWithImplementation",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	
@@ -332,8 +293,6 @@ end)
 Test extending twice with setting a property.
 --]]
 NexusUnitTesting:RegisterUnitTest("ExtendsWithPropertyChanged",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -372,8 +331,6 @@ end)
 Test extending with a property stored in the subclass.
 --]]
 NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSub",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -412,8 +369,6 @@ end)
 Test extending with a property stored in the superclass.
 --]]
 NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSuper",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -451,8 +406,6 @@ end)
 Test adding metamethods that aren't __index or __newindex.
 --]]
 NexusUnitTesting:RegisterUnitTest("Metamethods",function(UnitTest)
-	local NexusObject = require(NexusObjectModule)
-	
 	--Extend the NexusObject class.
 	local BasicExtendedObject = NexusObject:Extend()
 	BasicExtendedObject:SetClassName("BasicExtendedObject")
@@ -464,9 +417,9 @@ NexusUnitTesting:RegisterUnitTest("Metamethods",function(UnitTest)
 		self.Value = Value
 	end
 	
-	--Add an equals method.
-	function ExtendedObject:__eq(OtherObject)
-		return self.Value == OtherObject.Value
+	--Add an add method.
+	function ExtendedObject:__add(OtherObject)
+		return self.Value + OtherObject.Value
 	end
 	
 	--Add a tostring method.
@@ -487,9 +440,9 @@ NexusUnitTesting:RegisterUnitTest("Metamethods",function(UnitTest)
 	UnitTest:AssertEquals(tostring(CuT3),"ExtendedObject 1","tostring() is incorrect.")
 	UnitTest:AssertEquals(tostring(CuT4),"ExtendedObject 1","tostring() is incorrect.")
 	UnitTest:AssertEquals(tostring(CuT5),"ExtendedObject 2","tostring() is incorrect.")
-	UnitTest:AssertEquals(CuT3,CuT4,"Objects aren't equals")
-	UnitTest:AssertNotEquals(CuT3,CuT5,"Objects are equals")
-	UnitTest:AssertNotEquals(CuT4,CuT5,"Objects are equals")
+	UnitTest:AssertEquals(CuT3 + CuT4,2,"Objects don't add correctly.")
+	UnitTest:AssertEquals(CuT3 + CuT5,3,"Objects don't add correctly.")
+	UnitTest:AssertEquals(CuT4 + CuT5,3,"Objects don't add correctly.")
 end)
 
 

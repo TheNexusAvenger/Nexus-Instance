@@ -21,9 +21,8 @@ NexusInterface.RequiredAttributes = {}
 Called after extending when another class extends
 the class. The purpose of this is to add attributes
 to the class.
-For NexusObject, nothing is done.
 --]]
-function NexusObject:__classextended(OtherClass)
+function NexusInterface:__classextended(OtherClass)
 	OtherClass.RequiredAttributes = {}
 end
 	

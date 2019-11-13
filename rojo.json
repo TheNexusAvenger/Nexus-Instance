@@ -4,11 +4,11 @@
 	"partitions": {
  		"src": {
 			"path": "src",
-			"target": "ReplicatedStorage.Sources"
+			"target": "ReplicatedStorage.NexusInstance"
 		},
 		"test": {
 			"path": "test",
-			"target": "ReplicatedStorage.Tests"
+			"target": "ReplicatedStorage.NexusInstanceTests"
 		}
 	}
 }

@@ -3,13 +3,16 @@ TheNexusAvenger
 
 Unit tests for the NexusInstance class.
 --]]
+
 local NexusUnitTesting = require("NexusUnitTesting")
 
 local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusObjectFolder = Sources:WaitForChild("NexusObject")
-local NexusInstanceModule = NexusObjectFolder:WaitForChild("NexusInstance")
+local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusInstanceModule = NexusInstanceFolder:WaitForChild("NexusInstance")
 
 local NexusInstance = require(NexusInstanceModule)
+
+
 
 --[[
 Test the constructor.
@@ -17,12 +20,16 @@ Test the constructor.
 NexusUnitTesting:RegisterUnitTest("Constructor",function(UnitTest)
 	--Create the object.
 	local CuT = NexusInstance.new()
+	CuT.FalseValue = false
 	
 	--Run the assertions.
 	UnitTest:AssertEquals(CuT.ClassName,"NexusInstance","ClassName isn't properly set.")
 	UnitTest:AssertTrue(CuT:IsA("NexusInstance"),"IsA isn't properly registering.")
 	UnitTest:AssertTrue(CuT:IsA("NexusObject"),"IsA isn't properly registering.")
 	UnitTest:AssertTrue(CuT.super:IsA("NexusObject"),"IsA isn't properly registering for the super.")
+	UnitTest:AssertEquals(CuT.FalseValue,false,"Property is incorrect.")
+	UnitTest:AssertSame(CuT.object,CuT,"object is incorrect.")
+	UnitTest:AssertSame(CuT.super.object,CuT,"object is incorrect.")
 end)
 
 --[[
@@ -244,6 +251,41 @@ NexusUnitTesting:RegisterUnitTest("ChangedSuperClass",function(UnitTest)
 	--Fail the unit test if changed wasn't fired.
 	wait(1)
 	UnitTest:Fail("Change not registered.")
+end)
+
+--[[
+Test extending twice.
+--]]
+NexusUnitTesting:RegisterUnitTest("DoubleExtends",function(UnitTest)
+	--Extend the NexusInstance class.
+	local ExtendedObject1 = NexusInstance:Extend()
+	ExtendedObject1:SetClassName("ExtendedClass1")
+	
+	--Override the constructor.
+	function ExtendedObject1:__new()
+		self:InitializeSuper()
+		self.TestProperty = "Test"
+	end
+	
+	--Extend the ExtendedObject1 class.
+	local ExtendedObject2 = ExtendedObject1:Extend()
+	ExtendedObject2:SetClassName("ExtendedClass2")
+	
+	--Override the constructor.
+	function ExtendedObject2:__new()
+		self:InitializeSuper()
+	end
+	
+	--Create the object.
+	local CuT = ExtendedObject2.new()
+	
+	--Run the assertions.
+	UnitTest:AssertEquals(CuT.ClassName,"ExtendedClass2","ClassName isn't properly set.")
+	UnitTest:AssertNotNil(CuT.super,"Super isn't initialized.")
+	UnitTest:AssertTrue(CuT:IsA("ExtendedClass2"),"IsA isn't properly registering.")
+	UnitTest:AssertTrue(CuT:IsA("ExtendedClass1"),"IsA returns incorrectly with the super class initialized.")
+	UnitTest:AssertTrue(CuT:IsA("NexusObject"),"IsA returns incorrectly with the super class initialized.")
+	UnitTest:AssertEquals(CuT.TestProperty,"Test","Super class property isn't properly set.")
 end)
 
 
