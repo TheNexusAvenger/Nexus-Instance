@@ -18,6 +18,10 @@ be `"NexusObject"`, but isn't locked.
 Creates an instance of `NexusObject`. It isn't intended
 to be used since it should be extended.
 
+### `static NexusObject:Extend()`
+Extends a class to allow for implementing properties and
+functions while inheriting the super class's behavior.
+
 ### `static NexusObject:__classextended(OtherClass)`
 Called after extending when another class extends
 the class. The purpose of this is to add attributes
@@ -68,7 +72,3 @@ It should be called in the constructor of the class.
 ### `NexusObject:IsA(ClassName)`
 Returns if the object is or inherits from a class
 with the given class name.
-
-### `NexusObject:Extend()`
-Extends a class to allow for implementing properties and
-functions while inheriting the super class's behavior.
