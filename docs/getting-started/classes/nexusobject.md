@@ -51,12 +51,19 @@ Returns a list of the interfaces that the class implements.
 This includes ones implemented by super classes.
 
 ### `NexusObject.super`
-The super class of the object. If the object has called
-`NexusObject::InitializeSuper`, then `super` will reflect
-a partial instanciation of the class. If it isn't called,
-then `super` will represent the static class it inherits from.
-For `NexusObject`, this will be `nil` since it is the
-root class.
+The super-class of the object. It will have all of the
+attributes and methods defined to the object, but all
+class-level attributes and methods will refer to
+the super-class.
+
+### `NexusObject.object`
+The object itself. This is intended to guarentee the
+root class method is called, mainly in the constructor.
+
+### `NexusObject.class`
+The class of the object. It will have the methods and
+attributes of the class, but will not have any of the
+object.
 
 ### `NexusObject:__new()`
 Base constructor of `NexusObject`. When an object extends
