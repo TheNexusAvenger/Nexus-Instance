@@ -32,7 +32,8 @@ function NexusInstance:__new()
 end
 
 --[[
-Creates an __index metamethod for an object.
+Creates an __index metamethod for an object. Used to
+setup custom indexing.
 --]]
 function NexusInstance:__createindexmethod(Object,Class,RootClass)
 	--Get the base method.

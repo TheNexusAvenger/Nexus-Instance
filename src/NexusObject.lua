@@ -65,7 +65,7 @@ end
 
 
 --[[
-Creates an instance of a Nexus Instance. This is used
+Creates an instance of a NexusObject. This is used
 as a base.
 --]]
 function NexusObject.new(...)
@@ -117,7 +117,8 @@ function NexusObject:__classextended(OtherClass)
 end
 
 --[[
-Creates an __index metamethod for an object.
+Creates an __index metamethod for an object. Used to
+setup custom indexing.
 --]]
 function NexusObject:__createindexmethod(Object,Class,RootClass)
 	--Set the root class.
@@ -180,7 +181,10 @@ function NexusObject:__tostring()
 end
 
 --[[
-Initializes the super class.
+Initializes the super class. The paramters given
+by "..." are passed into the constructor of the
+super class (__new(...)). It should be called
+in the constructor of the class.
 --]]
 function NexusObject:InitializeSuper(...)
 	if self.super then
@@ -209,9 +213,6 @@ function NexusObject:Implements(Interface)
 	--Add the interface.
 	table.insert(self.Interfaces,Interface)
 end
-
-
-
 
 --[[
 Returns a list of the interfaces that the
@@ -265,7 +266,8 @@ function NexusObject:IsA(ClassName)
 end
 
 --[[
-Extends a Nexus Instance class and returns the inherited class.
+Extends a class to allow for implementing properties and
+functions while inheriting the super class's behavior.
 --]]
 function NexusObject:Extend()
 	local super = self
@@ -332,7 +334,6 @@ function NexusObject:Extend()
 	Called after extending when another class extends
 	the class. The purpose of this is to add attributes
 	to the class.
-	For NexusObject, nothing is done.
 	--]]
 	function ExtendedClass:__classextended(OtherClass)
 		self.super:__classextended(OtherClass)
