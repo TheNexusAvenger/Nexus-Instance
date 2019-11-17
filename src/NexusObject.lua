@@ -221,7 +221,6 @@ by super classes.
 function NexusObject:GetInterfaces()
 	--Get the super class's interfaces.
 	local Interfaces = {}
-	--if self.super and self.super ~= self then
 	if self.super then
 		Interfaces = self.super:GetInterfaces()
 	end
@@ -257,7 +256,7 @@ function NexusObject:IsA(ClassName)
 	end
 	
 	--If a super class exists, return the result of the super.
-	if self.super then --and self.super.ClassName ~= self.ClassName then
+	if self.super then
 		return self.super:IsA(ClassName)
 	end
 	
