@@ -71,9 +71,9 @@ Fires the event.
 function LuaEvent:Fire(...)
 	local Parameters = {...}
 	for Connection,_ in pairs(self.Connections) do
-		 coroutine.resume(coroutine.create(function()
+		 coroutine.wrap(function()
 			Connection:Fire(unpack(Parameters))
-         end))
+         end)()
 	end
 end
 

@@ -5,9 +5,8 @@ Unit tests for the RobloxEvent class.
 --]]
 local NexusUnitTesting = require("NexusUnitTesting")
 
-local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusObjectFolder = Sources:WaitForChild("NexusObject")
-local EventFolder = NexusObjectFolder:WaitForChild("Event")
+local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
+local EventFolder = NexusInstanceFolder:WaitForChild("Event")
 local RobloxEventModule = EventFolder:WaitForChild("RobloxEvent")
 
 local RobloxEvent = require(RobloxEventModule)
@@ -142,9 +141,10 @@ NexusUnitTesting:RegisterUnitTest("Wait",function(UnitTest)
 	local CuT = RobloxEvent.new()
 	
 	--Create the incrementer function.
-	delay(0.1,function()
+	coroutine.wrap(function()
+		wait(0.1)
 		CuT:Fire(1,2,3)
-	end)
+	end)()
 	
 	--Wait for the event to be fired.
 	local InvokeA,InvokeB,InvokeC = CuT:Wait()

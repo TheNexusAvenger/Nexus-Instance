@@ -32,15 +32,27 @@ function NexusInstance:__new()
 end
 
 --[[
-Called after the constructor when another object
-extends the object. The primary purpose is to be
-able to manipulate the metatables of a class for
-something like NexusInstance.
-For NexusObject, nothing is done.
+Creates an __index metamethod for an object. Used to
+setup custom indexing.
 --]]
-function NexusInstance:__extended(OtherObject)
-	self.super:__extended(OtherObject)
-	self.__InitMetaMethods(OtherObject)
+function NexusInstance:__createindexmethod(Object,Class,RootClass)
+	--Get the base method.
+	local BaseIndexMethod = self.super:__createindexmethod(Object,Class,RootClass)
+	
+	--Return a wrapped method.
+	return function(MethodObject,Index)
+		--Return an internal property.
+		local InternalProperties = rawget(Object.object,"__InternalProperties")
+		if InternalProperties then
+			local Value = InternalProperties[Index]
+			if Value ~= nil then
+				return Value
+			end
+		end
+		
+		--Return the base return.
+		return BaseIndexMethod(MethodObject,Index)
+	end
 end
 
 --[[
@@ -48,6 +60,7 @@ Sets up the internal properties.
 --]]
 function NexusInstance:__InitInternalProperties()
 	--Set up the properties.
+	self.__InternalProperties = {}
 	self.__PropertyValidators = {}
 	self.__HiddenProperties = {}
 	self.__LockedProperties = {}
@@ -72,7 +85,7 @@ Sets up the meta methods.
 --]]
 function NexusInstance:__InitMetaMethods()
 	--Set up the internal state.
-	local InternalProperties = {}
+	local InternalProperties = self.__InternalProperties
 	local PropertyValidators = self.__PropertyValidators
 	local HiddenProperties = self.__HiddenProperties
 	local LockedProperties = self.__LockedProperties
@@ -80,8 +93,23 @@ function NexusInstance:__InitMetaMethods()
 	local PropertyChanged = self.__PropertyChanged
 	local ChangedBindableEvent = self.__ChangedEvent
 	
+	--Set up custom indexing.
+	local Metatable = getmetatable(self.object)
+	local ExistingIndex = Metatable.__index
+	
+	local function index(_,Index)
+		--Return the internal property.
+		local InternalPropertyValue = rawget(InternalProperties,Index)
+		if InternalPropertyValue ~= nil then
+			return InternalPropertyValue
+		end
+		
+		--Return the base return.
+		return ExistingIndex(self,Index)
+	end
+	Metatable.__index = index
+	
 	--Set up changes.
-	local Metatable = getmetatable(self)
 	Metatable.__newindex = function(_,Index,Value)
 		--Throw an error if the property is locked.
 		if LockedProperties[Index] then
@@ -89,7 +117,7 @@ function NexusInstance:__InitMetaMethods()
 		end
 		
 		--Return if the new and old values are the same.
-		if self[Index] == Value then
+		if index(self,Index) == Value then
 			return
 		end
 		
@@ -121,12 +149,6 @@ function NexusInstance:__InitMetaMethods()
 			return
 		end
 		ChangedBindableEvent:Fire(Index)
-	end
-	
-	--Set up custom indexing.
-	local ExistingIndex = Metatable.__index
-	Metatable.__index = function(_,Index)
-		return rawget(InternalProperties,Index) or ExistingIndex(self,Index)
 	end
 end
 

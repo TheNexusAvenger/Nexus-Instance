@@ -40,7 +40,9 @@ Disconnects the connection from the event.
 function NexusConnection:Disconnect()
 	if self.Connected then
 		self.Connected = false
-		self.Event:Disconnected(self)
+		if self.Event then
+			self.Event:Disconnected(self)
+		end
 	end
 end
 
