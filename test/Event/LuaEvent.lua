@@ -6,8 +6,7 @@ Unit tests for the LuaEvent class.
 
 local NexusUnitTesting = require("NexusUnitTesting")
 
-local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
 local EventFolder = NexusInstanceFolder:WaitForChild("Event")
 local LuaEventModule = EventFolder:WaitForChild("LuaEvent")
 

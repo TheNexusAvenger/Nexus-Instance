@@ -5,8 +5,7 @@ Unit tests for the RobloxEvent class.
 --]]
 local NexusUnitTesting = require("NexusUnitTesting")
 
-local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
 local EventFolder = NexusInstanceFolder:WaitForChild("Event")
 local RobloxEventModule = EventFolder:WaitForChild("RobloxEvent")
 

@@ -5,8 +5,7 @@ Unit tests for the NexusInterface class.
 --]]
 local NexusUnitTesting = require("NexusUnitTesting")
 
-local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
 local NexusObject = require(NexusInstanceFolder:WaitForChild("NexusObject"))
 local NexusInterface = require(NexusInstanceFolder:WaitForChild("NexusInterface"))
 

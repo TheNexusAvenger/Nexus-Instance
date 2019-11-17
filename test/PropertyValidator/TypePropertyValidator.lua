@@ -6,8 +6,7 @@ Unit tests for the TypePropertyValidator class.
 
 local NexusUnitTesting = require("NexusUnitTesting")
 
-local Sources = game:GetService("ReplicatedStorage"):WaitForChild("Sources")
-local NexusInstanceFolder = Sources:WaitForChild("NexusInstance")
+local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
 local NexusInstanceModule = NexusInstanceFolder:WaitForChild("NexusInstance")
 local PropertyValidatorFolder = NexusInstanceFolder:WaitForChild("PropertyValidator")
 local TypePropertyValidatorModule = PropertyValidatorFolder:WaitForChild("TypePropertyValidator")
