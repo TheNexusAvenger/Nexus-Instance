@@ -19,7 +19,6 @@ Creates an instance of `NexusObject`. It isn't intended
 to be used since it should be extended.
 
 ### `static NexusObject:__classextended(OtherClass)`
-
 Called after extending when another class extends
 the class. The purpose of this is to add attributes
 to the class.
@@ -28,6 +27,10 @@ to the class.
     explicitly to the next super class. It is recommended to
     have `self.super:__classextended(OtherClass)` if this function
     is overriden. If it isn't, this done implicitly.
+
+### `static NexusObject:__createindexmethod(Object,Class,RootClass)
+Creates the `__index` metamethod for an object. Used to
+setup custom indexing.
 
 ### `static NexusObject:SetClassName(ClassName)`
 Sets the class name of the object. It should be called staticly
@@ -56,19 +59,6 @@ Base constructor of `NexusObject`. When an object extends
 `NexusObject`, this function should be overriden by the
 constructor required for that class. For `NexusObject`,
 this function is empty.
-
-### `NexusObject:__extended(OtherObject)`
-Called after the constructor for `NexusObject::InitializeSuper`
-when a class (Lua table) extends the base object. The
-only intended use case is for where modifying
-the Lua Metatables is required. It can also be used to
-check if an extension implements a set of functions,
-but it isn't supported or tested for.
-!!! note
-    When this function is overriden, it isn't called
-    explicitly to the next super class. It is recommended to
-    have `self.super:__extended(OtherObject)` if this function
-    is overriden. If it isn't, this done implicitly.
 
 ### `NexusObject:InitializeSuper(...)`
 Initializes the super class. The paramters given by `...`
