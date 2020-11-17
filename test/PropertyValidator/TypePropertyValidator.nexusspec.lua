@@ -13,20 +13,14 @@ local TypePropertyValidatorModule = PropertyValidatorFolder:WaitForChild("TypePr
 
 local NexusInstance = require(NexusInstanceModule)
 local TypePropertyValidator = require(TypePropertyValidatorModule)
+local TypePropertyValidatorTest = NexusUnitTesting.UnitTest:Extend()
 
 
-
---[[
-Test the constructor.
---]]
-NexusUnitTesting:RegisterUnitTest("Constructor",function(UnitTest)
-	TypePropertyValidator.new("CFrame")
-end)
 
 --[[
 Tests the Connect method.
 --]]
-NexusUnitTesting:RegisterUnitTest("Connect",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(TypePropertyValidatorTest.new("Connect"):SetRun(function(self)
 	--Create the object.
 	local CuT1 = TypePropertyValidator.new("CFrame")
 	local CuT2 = TypePropertyValidator.new("BasePart")
@@ -41,31 +35,30 @@ NexusUnitTesting:RegisterUnitTest("Connect",function(UnitTest)
 	--Assert the Roblox type.
 	local Property = CFrame.new()
 	TestObject.Property1 = Property
-	UnitTest:AssertEquals(TestObject.Property1,Property,"Property not set.")
-	UnitTest:AssertErrors(function()
+	self:AssertEquals(TestObject.Property1,Property,"Property not set.")
+	self:AssertErrors(function()
 		TestObject.Property1 = "Fail"
 	end)
-	UnitTest:AssertEquals(TestObject.Property1,Property,"Property changed.")
+	self:AssertEquals(TestObject.Property1,Property,"Property changed.")
 	
 	--Assert the Roblox Instance.
-	local Property = Instance.new("Part")
+	Property = Instance.new("Part")
 	TestObject.Property2 = Property
-	UnitTest:AssertEquals(TestObject.Property2,Property,"Property not set.")
-	UnitTest:AssertErrors(function()
+	self:AssertEquals(TestObject.Property2,Property,"Property not set.")
+	self:AssertErrors(function()
 		TestObject.Property2 = "Fail"
 	end)
-	UnitTest:AssertEquals(TestObject.Property2,Property,"Property changed.")
+	self:AssertEquals(TestObject.Property2,Property,"Property changed.")
 	
 	--Assert the NexusObject Instance.
-	local Property = NexusInstance.new()
+	Property = NexusInstance.new()
 	TestObject.Property3 = Property
-	UnitTest:AssertEquals(TestObject.Property3,Property,"Property not set.")
-	UnitTest:AssertErrors(function()
+	self:AssertEquals(TestObject.Property3,Property,"Property not set.")
+	self:AssertErrors(function()
 		TestObject.Property3 = "Fail"
 	end)
-	UnitTest:AssertEquals(TestObject.Property3,Property,"Property changed.")
-end)
-
+	self:AssertEquals(TestObject.Property3,Property,"Property changed.")
+end))
 
 
 

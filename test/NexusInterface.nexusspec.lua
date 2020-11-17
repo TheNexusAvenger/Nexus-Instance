@@ -8,13 +8,14 @@ local NexusUnitTesting = require("NexusUnitTesting")
 local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
 local NexusObject = require(NexusInstanceFolder:WaitForChild("NexusObject"))
 local NexusInterface = require(NexusInstanceFolder:WaitForChild("NexusInterface"))
+local NexusInterfaceTest = NexusUnitTesting.UnitTest:Extend()
 
 
 
 --[[
 Test creating an interface.
 --]]
-NexusUnitTesting:RegisterUnitTest("Creation",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("Creation"):SetRun(function(UnitTest)
 	--Extend the interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -33,12 +34,12 @@ NexusUnitTesting:RegisterUnitTest("Creation",function(UnitTest)
 	local TestClass = NexusObject.new()
 	UnitTest:AssertEquals(NexusInterface:GetMissingAttributes(TestClass),{},"Missing attributes is incorrect.")
 	UnitTest:AssertEquals(CuT:GetMissingAttributes(TestClass),{"Function1","Function2"},"Missing attributes is incorrect.")
-end)
+end))
 
 --[[
 Tests that interfaces don't go down.
 --]]
-NexusUnitTesting:RegisterUnitTest("InterfaceNotPropegatingDownward",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("InterfaceNotPropegatingDownward"):SetRun(function(UnitTest)
 	--Create a class and interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -52,29 +53,29 @@ NexusUnitTesting:RegisterUnitTest("InterfaceNotPropegatingDownward",function(Uni
 	UnitTest:AssertTrue(Object1:IsA("TestInterface"),"Interface not implemented.")
 	UnitTest:AssertEquals(#Object2:GetInterfaces(),0,"Interface added to NexusObject.")
 	UnitTest:AssertFalse(Object2:IsA("TestInterface"),"Interface added to NexusObject.")
-end)
+end))
 
 --[[
 Tests having classes implement a non-interface fails.
 --]]
-NexusUnitTesting:RegisterUnitTest("NonInterfaceFails",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("NonInterfaceFails"):SetRun(function(self)
 	--Create a class and interface.
 	local TestClass = NexusObject:Extend()
 	TestClass:SetClassName("TestObject")
 	
 	--Assert implementing a non-interface fails.
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass:Implements(NexusObject)
 	end,"Interface implemented.")
 	
 	--Create the class.
 	TestClass.new()
-end)
+end))
 
 --[[
 Tests having classes implement an interface.
 --]]
-NexusUnitTesting:RegisterUnitTest("ImplementingInterface",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("ImplementingInterface"):SetRun(function(self)
 	--Create a class and interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -84,7 +85,7 @@ NexusUnitTesting:RegisterUnitTest("ImplementingInterface",function(UnitTest)
 	TestClass:Implements(CuT)
 	
 	--Assert an error occurs for not implementing the interface.
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass.new()
 	end,"Error not thrown for unimplemented behavior.")
 
@@ -96,17 +97,17 @@ NexusUnitTesting:RegisterUnitTest("ImplementingInterface",function(UnitTest)
 	--Test the interface being implemented.
 	local TestObject1 = TestClass.new()
 	local TestObject2 = NexusObject.new()
-	UnitTest:AssertTrue(TestObject1:IsA("TestObject"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject1:IsA("NexusObject"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject1:IsA("TestInterface"),"IsA isn't properly registering.")
-	UnitTest:AssertFalse(TestObject2:IsA("TestInterface"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject1:TestFunction(),"Implemented function is incorrect.")
-end)
+	self:AssertTrue(TestObject1:IsA("TestObject"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject1:IsA("NexusObject"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject1:IsA("TestInterface"),"IsA isn't properly registering.")
+	self:AssertFalse(TestObject2:IsA("TestInterface"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject1:TestFunction(),"Implemented function is incorrect.")
+end))
 
 --[[
 Tests having classes implement multiple interfaces.
 --]]
-NexusUnitTesting:RegisterUnitTest("MultipleInterfaces",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("MultipleInterfaces"):SetRun(function(self)
 	--Create a class and interface.
 	local CuT1 = NexusInterface:Extend()
 	CuT1:SetClassName("TestInterface1")
@@ -120,7 +121,7 @@ NexusUnitTesting:RegisterUnitTest("MultipleInterfaces",function(UnitTest)
 	TestClass:Implements(CuT2)
 	
 	--Assert an error occurs for not implementing the interfaces.
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass.new()
 	end,"Error not thrown for unimplemented behavior.")
 
@@ -130,7 +131,7 @@ NexusUnitTesting:RegisterUnitTest("MultipleInterfaces",function(UnitTest)
 	end
 	
 	--Assert an error occurs for not implementing the second interface.
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass.new()
 	end,"Error not thrown for unimplemented behavior.")
 	
@@ -141,17 +142,17 @@ NexusUnitTesting:RegisterUnitTest("MultipleInterfaces",function(UnitTest)
 	
 	--Test the interface being implemented.
 	local TestObject = TestClass.new()
-	UnitTest:AssertTrue(TestObject:IsA("TestObject"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:IsA("TestInterface1"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:IsA("TestInterface2"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
-	UnitTest:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
-end)
+	self:AssertTrue(TestObject:IsA("TestObject"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:IsA("TestInterface1"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:IsA("TestInterface2"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
+	self:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
+end))
 
 --[[
 Tests interfaces propegating to subclasses.
 --]]
-NexusUnitTesting:RegisterUnitTest("InterfacePropegation",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("InterfacePropegation"):SetRun(function(self)
 	--Create a class and interface.
 	local CuT1 = NexusInterface:Extend()
 	CuT1:SetClassName("TestInterface1")
@@ -167,10 +168,10 @@ NexusUnitTesting:RegisterUnitTest("InterfacePropegation",function(UnitTest)
 	TestClass2:SetClassName("TestObject2")
 	
 	--Assert an error occurs for not implementing the interface.
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass1.new()
 	end,"Error not thrown for unimplemented behavior.")
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass2.new()
 	end,"Error not thrown for unimplemented behavior.")
 
@@ -185,23 +186,23 @@ NexusUnitTesting:RegisterUnitTest("InterfacePropegation",function(UnitTest)
 	
 	--Test the interface being implemented.
 	local TestObject = TestClass2.new()
-	UnitTest:AssertEquals(TestObject:GetInterfaces(),{CuT1},"Interfaces isn't correct.")
+	self:AssertEquals(TestObject:GetInterfaces(),{CuT1},"Interfaces isn't correct.")
 	TestClass2:Implements(CuT2)
-	UnitTest:AssertEquals(TestClass1:GetInterfaces(),{CuT1},"Interfaces isn't correct.")
-	UnitTest:AssertEquals(TestObject:GetInterfaces(),{CuT1,CuT2},"Interfaces isn't correct.")
-	UnitTest:AssertTrue(TestObject:IsA("TestObject1"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:IsA("TestObject2"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:IsA("NexusObject"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:IsA("TestInterface1"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:IsA("TestInterface2"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
-	UnitTest:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
-end)
+	self:AssertEquals(TestClass1:GetInterfaces(),{CuT1},"Interfaces isn't correct.")
+	self:AssertEquals(TestObject:GetInterfaces(),{CuT1,CuT2},"Interfaces isn't correct.")
+	self:AssertTrue(TestObject:IsA("TestObject1"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:IsA("TestObject2"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:IsA("NexusObject"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:IsA("TestInterface1"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:IsA("TestInterface2"),"IsA isn't properly registering.")
+	self:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
+	self:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
+end))
 
 --[[
 Tests having interfaces implement behavior (although not recommended).
 --]]
-NexusUnitTesting:RegisterUnitTest("InterfaceWithImplementation",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusInterfaceTest.new("InterfaceWithImplementation"):SetRun(function(self)
 	--Create a class and interface.
 	local CuT = NexusInterface:Extend()
 	CuT:SetClassName("TestInterface")
@@ -221,7 +222,7 @@ NexusUnitTesting:RegisterUnitTest("InterfaceWithImplementation",function(UnitTes
 	end
 	
 	--Assert an error occurs for not implementing the interface.
-	UnitTest:AssertErrors(function()
+	self:AssertErrors(function()
 		TestClass.new()
 	end,"Error not thrown for unimplemented behavior.")
 
@@ -236,11 +237,11 @@ NexusUnitTesting:RegisterUnitTest("InterfaceWithImplementation",function(UnitTes
 	
 	--Test the interface being implemented.
 	local TestObject = TestClass.new()
-	UnitTest:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
-	UnitTest:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
-	UnitTest:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
-end)
-	
+	self:AssertTrue(TestObject:TestFunction1(),"Implemented function is incorrect.")
+	self:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
+		self:AssertTrue(TestObject:TestFunction2(),"Implemented function is incorrect.")
+end))
+
 
 
 --Return true to prevent a ModuleScript error.

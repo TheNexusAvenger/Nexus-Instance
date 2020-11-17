@@ -7,7 +7,7 @@ is required to actually make Nexus Instance
 work in a non-Roblox environment.
 --]]
 
-local USE_NON_ROBLOX_EVENTS = true
+local USE_NON_ROBLOX_EVENTS = false
 
 local CLASS_NAME = "NexusEventCreator"
 

@@ -8,27 +8,28 @@ local NexusUnitTesting = require("NexusUnitTesting")
 
 local NexusInstanceFolder = game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance")
 local NexusObject = require(NexusInstanceFolder:WaitForChild("NexusObject"))
+local NexusObjectTest = NexusUnitTesting.UnitTest:Extend()
 
 
 
 --[[
 Test the constructor.
 --]]
-NexusUnitTesting:RegisterUnitTest("Constructor",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("Constructor"):SetRun(function(self)
 	--Create the object.
 	local CuT = NexusObject.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.ClassName,"NexusObject","ClassName isn't properly set.")
-	UnitTest:AssertTrue(CuT:IsA("NexusObject"),"IsA isn't properly registering.")
-	UnitTest:AssertFalse(CuT:IsA("BasePart"),"IsA returned true for an invalid class name.")
-	UnitTest:AssertSame(CuT.object,CuT,"object is incorrect.")
-end)
+	self:AssertEquals(CuT.ClassName,"NexusObject","ClassName isn't properly set.")
+	self:AssertTrue(CuT:IsA("NexusObject"),"IsA isn't properly registering.")
+	self:AssertFalse(CuT:IsA("BasePart"),"IsA returned true for an invalid class name.")
+	self:AssertSame(CuT.object,CuT,"object is incorrect.")
+end))
 
 --[[
 Test that subclasses get a clear constructor.
 --]]
-NexusUnitTesting:RegisterUnitTest("ConstructorCleared",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("ConstructorCleared"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	local NewCalled = 0
@@ -48,13 +49,13 @@ NexusUnitTesting:RegisterUnitTest("ConstructorCleared",function(UnitTest)
 	local CuT = TestClass3.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(NewCalled,1,"__new called an incorrect amount of times.")
-end)
+	self:AssertEquals(NewCalled,1,"__new called an incorrect amount of times.")
+end))
 
 --[[
 Test the Extend function.
 --]]
-NexusUnitTesting:RegisterUnitTest("Extend",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("Extend"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	ExtendedObject:SetClassName("ExtendedClass")
@@ -67,15 +68,15 @@ NexusUnitTesting:RegisterUnitTest("Extend",function(UnitTest)
 	local CuT = ExtendedObject.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
-	UnitTest:AssertNotNil(CuT.super,"Super isn't set.")
-	UnitTest:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
-end)
+	self:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
+	self:AssertNotNil(CuT.super,"Super isn't set.")
+	self:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
+end))
 
 --[[
 Test the Extend function with super class functions.
 --]]
-NexusUnitTesting:RegisterUnitTest("ExtendWithFunctions",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("ExtendWithFunctions"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	
@@ -106,14 +107,14 @@ NexusUnitTesting:RegisterUnitTest("ExtendWithFunctions",function(UnitTest)
 	local CuT = ExtendedObject2.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT:Test(),"Test2","Test() isn't properly set.")
-	UnitTest:AssertEquals(CuT.super:Test(),"Test1","super.Test() isn't properly set.")
-end)
+	self:AssertEquals(CuT:Test(),"Test2","Test() isn't properly set.")
+	self:AssertEquals(CuT.super:Test(),"Test1","super.Test() isn't properly set.")
+end))
 	
 --[[
 Test the Extend function with super class functions without initializing the super.
 --]]
-NexusUnitTesting:RegisterUnitTest("ExtendWithFunctionsNoSuper",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("ExtendWithFunctionsNoSuper"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	
@@ -138,14 +139,14 @@ NexusUnitTesting:RegisterUnitTest("ExtendWithFunctionsNoSuper",function(UnitTest
 	local CuT = ExtendedObject2.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT:Test(),"Test1","Test() isn't properly set.")
-	UnitTest:AssertNotNil(CuT.super,"super isn't properly set.")
-end)
+	self:AssertEquals(CuT:Test(),"Test1","Test() isn't properly set.")
+	self:AssertNotNil(CuT.super,"super isn't properly set.")
+end))
 
 --[[
 Test the InitializeSuper function.
 --]]
-NexusUnitTesting:RegisterUnitTest("SetClassName",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("SetClassName"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	ExtendedObject:SetClassName("ExtendedClass")
@@ -154,14 +155,14 @@ NexusUnitTesting:RegisterUnitTest("SetClassName",function(UnitTest)
 	local CuT = ExtendedObject.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
-	UnitTest:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
-end)
+	self:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
+	self:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
+end))
 
 --[[
 Test the InitializeSuper function.
 --]]
-NexusUnitTesting:RegisterUnitTest("InitializeSuper",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("InitializeSuper"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject = NexusObject:Extend()
 	ExtendedObject:SetClassName("ExtendedClass")
@@ -175,16 +176,16 @@ NexusUnitTesting:RegisterUnitTest("InitializeSuper",function(UnitTest)
 	local CuT = ExtendedObject.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
-	UnitTest:AssertNotNil(CuT.super,"Super isn't initialized.")
-	UnitTest:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(CuT:IsA("NexusObject"),"IsA returns incorrectly with the super class initialized.")
-end)
+	self:AssertEquals(CuT.ClassName,"ExtendedClass","ClassName isn't properly set.")
+	self:AssertNotNil(CuT.super,"Super isn't initialized.")
+	self:AssertTrue(CuT:IsA("ExtendedClass"),"IsA isn't properly registering.")
+	self:AssertTrue(CuT:IsA("NexusObject"),"IsA returns incorrectly with the super class initialized.")
+end))
 
 --[[
 Test extending twice.
 --]]
-NexusUnitTesting:RegisterUnitTest("DoubleExtends",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("DoubleExtends"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -207,17 +208,17 @@ NexusUnitTesting:RegisterUnitTest("DoubleExtends",function(UnitTest)
 	local CuT = ExtendedObject2.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.ClassName,"ExtendedClass2","ClassName isn't properly set.")
-	UnitTest:AssertNotNil(CuT.super,"Super isn't initialized.")
-	UnitTest:AssertTrue(CuT:IsA("ExtendedClass2"),"IsA isn't properly registering.")
-	UnitTest:AssertTrue(CuT:IsA("ExtendedClass1"),"IsA returns incorrectly with the super class initialized.")
-	UnitTest:AssertTrue(CuT:IsA("NexusObject"),"IsA returns incorrectly with the super class initialized.")
-end)
+	self:AssertEquals(CuT.ClassName,"ExtendedClass2","ClassName isn't properly set.")
+	self:AssertNotNil(CuT.super,"Super isn't initialized.")
+	self:AssertTrue(CuT:IsA("ExtendedClass2"),"IsA isn't properly registering.")
+	self:AssertTrue(CuT:IsA("ExtendedClass1"),"IsA returns incorrectly with the super class initialized.")
+	self:AssertTrue(CuT:IsA("NexusObject"),"IsA returns incorrectly with the super class initialized.")
+end))
 
 --[[
 Test extending twice with a parameters.
 --]]
-NexusUnitTesting:RegisterUnitTest("DoubleExtendsWithParameter",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("DoubleExtendsWithParameter"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -229,7 +230,7 @@ NexusUnitTesting:RegisterUnitTest("DoubleExtendsWithParameter",function(UnitTest
 		
 		--Fail if the name isn't given.
 		if not Name then
-			UnitTest:Fail("Name not given")
+			self:Fail("Name not given")
 		end
 	end
 	
@@ -246,13 +247,13 @@ NexusUnitTesting:RegisterUnitTest("DoubleExtendsWithParameter",function(UnitTest
 	local CuT = ExtendedObject2.new("TestName")
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.Name,"TestName","Name isn't properly set.")
-end)
+	self:AssertEquals(CuT.Name,"TestName","Name isn't properly set.")
+end))
 
 --[[
 Test extending twice with a custom method implemented.
 --]]
-NexusUnitTesting:RegisterUnitTest("ExtendsWithImplementation",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("ExtendsWithImplementation"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	
@@ -282,16 +283,16 @@ NexusUnitTesting:RegisterUnitTest("ExtendsWithImplementation",function(UnitTest)
 	local CuT4 = ExtendedObject4.new()
 	
 	--Run the assertions.
-	UnitTest:AssertNil(CuT1.Test,"Function implemented in super class.")
-	UnitTest:AssertEquals(CuT2:Test(),"Test","Function isn't returning correctly.")
-	UnitTest:AssertEquals(CuT3:Test(),"Test","Function isn't returning correctly.")
-	UnitTest:AssertEquals(CuT4:Test(),"Test2","Function is overriden.")
-end)
+	self:AssertNil(CuT1.Test,"Function implemented in super class.")
+	self:AssertEquals(CuT2:Test(),"Test","Function isn't returning correctly.")
+	self:AssertEquals(CuT3:Test(),"Test","Function isn't returning correctly.")
+	self:AssertEquals(CuT4:Test(),"Test2","Function is overriden.")
+end))
 
 --[[
 Test extending twice with setting a property.
 --]]
-NexusUnitTesting:RegisterUnitTest("ExtendsWithPropertyChanged",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("ExtendsWithPropertyChanged"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -320,16 +321,16 @@ NexusUnitTesting:RegisterUnitTest("ExtendsWithPropertyChanged",function(UnitTest
 	CuT.Value = "Test"
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.Value,"Test","Value isn't set.")
-	UnitTest:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
-	UnitTest:AssertEquals(CuT:GetValue(),"Test","Function isn't returning correctly.")
-	UnitTest:AssertEquals(CuT.super:GetValue(),"Test","Function isn't returning correctly.")
-end)
+	self:AssertEquals(CuT.Value,"Test","Value isn't set.")
+	self:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
+	self:AssertEquals(CuT:GetValue(),"Test","Function isn't returning correctly.")
+	self:AssertEquals(CuT.super:GetValue(),"Test","Function isn't returning correctly.")
+end))
 
 --[[
 Test extending with a property stored in the subclass.
 --]]
-NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSub",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("SuperClassAccessOfSub"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -358,16 +359,16 @@ NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSub",function(UnitTest)
 	local CuT = ExtendedObject2.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.Value,"Test","Value isn't set.")
-	UnitTest:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
-	UnitTest:AssertEquals(CuT:GetValue(),"Test","Function isn't returning correctly.")
-	UnitTest:AssertEquals(CuT.super:GetValue(),"Test","Function isn't returning correctly.")
-end)
+	self:AssertEquals(CuT.Value,"Test","Value isn't set.")
+	self:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
+	self:AssertEquals(CuT:GetValue(),"Test","Function isn't returning correctly.")
+	self:AssertEquals(CuT.super:GetValue(),"Test","Function isn't returning correctly.")
+end))
 
 --[[
 Test extending with a property stored in the superclass.
 --]]
-NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSuper",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("SuperClassAccessOfSuper"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local ExtendedObject1 = NexusObject:Extend()
 	ExtendedObject1:SetClassName("ExtendedClass1")
@@ -396,15 +397,15 @@ NexusUnitTesting:RegisterUnitTest("SuperClassAccessOfSuper",function(UnitTest)
 	local CuT = ExtendedObject2.new()
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(CuT.Value,"Test","Value isn't set.")
-	UnitTest:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
-	UnitTest:AssertEquals(CuT:GetValue(),"Test","Value isn't set.")
-end)
+	self:AssertEquals(CuT.Value,"Test","Value isn't set.")
+	self:AssertEquals(CuT.super.Value,"Test","Value isn't set.")
+	self:AssertEquals(CuT:GetValue(),"Test","Value isn't set.")
+end))
 
 --[[
 Test adding metamethods that aren't __index or __newindex.
 --]]
-NexusUnitTesting:RegisterUnitTest("Metamethods",function(UnitTest)
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("Metamethods"):SetRun(function(self)
 	--Extend the NexusObject class.
 	local BasicExtendedObject = NexusObject:Extend()
 	BasicExtendedObject:SetClassName("BasicExtendedObject")
@@ -434,15 +435,15 @@ NexusUnitTesting:RegisterUnitTest("Metamethods",function(UnitTest)
 	local CuT5 = ExtendedObject.new(2)
 	
 	--Run the assertions.
-	UnitTest:AssertEquals(string.sub(tostring(CuT1),1,13),"NexusObject: ","tostring() is incorrect.")
-	UnitTest:AssertEquals(string.sub(tostring(CuT2),1,21),"BasicExtendedObject: ","tostring() isn't inherited.")
-	UnitTest:AssertEquals(tostring(CuT3),"ExtendedObject 1","tostring() is incorrect.")
-	UnitTest:AssertEquals(tostring(CuT4),"ExtendedObject 1","tostring() is incorrect.")
-	UnitTest:AssertEquals(tostring(CuT5),"ExtendedObject 2","tostring() is incorrect.")
-	UnitTest:AssertEquals(CuT3 + CuT4,2,"Objects don't add correctly.")
-	UnitTest:AssertEquals(CuT3 + CuT5,3,"Objects don't add correctly.")
-	UnitTest:AssertEquals(CuT4 + CuT5,3,"Objects don't add correctly.")
-end)
+	self:AssertEquals(string.sub(tostring(CuT1),1,13),"NexusObject: ","tostring() is incorrect.")
+	self:AssertEquals(string.sub(tostring(CuT2),1,21),"BasicExtendedObject: ","tostring() isn't inherited.")
+	self:AssertEquals(tostring(CuT3),"ExtendedObject 1","tostring() is incorrect.")
+	self:AssertEquals(tostring(CuT4),"ExtendedObject 1","tostring() is incorrect.")
+	self:AssertEquals(tostring(CuT5),"ExtendedObject 2","tostring() is incorrect.")
+	self:AssertEquals(CuT3 + CuT4,2,"Objects don't add correctly.")
+	self:AssertEquals(CuT3 + CuT5,3,"Objects don't add correctly.")
+	self:AssertEquals(CuT4 + CuT5,3,"Objects don't add correctly.")
+end))
 
 
 
