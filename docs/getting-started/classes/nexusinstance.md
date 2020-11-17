@@ -46,5 +46,8 @@ property. This is intended for cases where a `Changed`
 signal will invoke a change that causes a stack overflow.
 
 ### `NexusInstance:GetPropertyChangedSignal(PropertyName)`
-Returns an `RBXScriptSignal` that is invoked when a specific
-property is changed.
+Returns an [`NexusEvent`](event/nexusevent.md) that is invoked
+when a specific property is changed.
+
+### `NexusInstance:Destroy()`
+Disconnects the events of the instance.

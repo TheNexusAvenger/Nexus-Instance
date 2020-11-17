@@ -122,7 +122,7 @@ function NexusInstance:__InitMetaMethods()
 		end
 		
 		--Validate the value.
-		local Validators = self.__PropertyValidators[Index]
+		local Validators = PropertyValidators[Index]
 		if Validators then
 			for _,Validator in pairs(Validators) do
 				Value = Validator:ValidateChange(self,Index,Value)
@@ -195,6 +195,20 @@ function NexusInstance:GetPropertyChangedSignal(PropertyName)
 	
 	--Return the event.
 	return self.__PropertyChanged[PropertyName]
+end
+
+--[[
+Disconnects the events of the instance.
+--]]
+function NexusInstance:Destroy()
+	--Disconnect the changed event.
+	self.Changed:Disconnect()
+
+	--Disconnect the changed signal events.
+	for _,Event in pairs(self.__PropertyChanged) do
+		Event:Disconnect()
+	end
+	self.__PropertyChanged = {}
 end
 
 

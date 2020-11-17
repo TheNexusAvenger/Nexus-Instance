@@ -171,6 +171,37 @@ NexusUnitTesting:RegisterUnitTest("GetPropertyChangedSignalHiddenProperty",funct
 end)
 
 --[[
+Test the Destroy function.
+--]]
+NexusUnitTesting:RegisterUnitTest("GetPropertyChangedSignalHiddenProperty",function(UnitTest)
+	--Create the object.
+	local CuT = NexusInstance.new()
+		
+	--Create and lock a property.
+	CuT.TestChange = "Test"
+
+	--Set up checking for changes.
+	local TimesCalled1,TimesCalled2 = 0,0
+	CuT.Changed:Connect(function()
+		TimesCalled1 = TimesCalled1 + 1
+	end)
+	CuT:GetPropertyChangedSignal("TestChange"):Connect(function()
+		TimesCalled2 = TimesCalled2 + 1
+	end)
+
+	--Change the property and assert it was called.
+	CuT.TestChange = "Test2"
+	UnitTest:AssertSame(TimesCalled1,1,"Event was not called a correct amount of times.")
+	UnitTest:AssertSame(TimesCalled2,1,"Event was not called a correct amount of times.")
+
+	--Fail the unit test if changed was fired after destroying.
+	CuT:Destroy()
+	CuT.TestChange = "Test3"
+	UnitTest:AssertSame(TimesCalled1,1,"Event was called after destroying..")
+	UnitTest:AssertSame(TimesCalled2,1,"Event was called after destroying..")
+end)
+
+--[[
 Test the Changed event.
 --]]
 NexusUnitTesting:RegisterUnitTest("Changed",function(UnitTest)
