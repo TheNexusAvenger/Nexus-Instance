@@ -108,6 +108,80 @@ NexusUnitTesting:RegisterUnitTest("Fire",function(UnitTest)
 end)
 
 --[[
+Tests the Fire method with missing arguments.
+--]]
+NexusUnitTesting:RegisterUnitTest("Fire",function(UnitTest)
+	--Create the object.
+	local CuT = RobloxEvent.new()
+	
+	--Create the incrementer function.
+	local InvokeA,InvokeB,InvokeC
+	local function Invoked(A,B,C)
+		InvokeA,InvokeB,InvokeC = A,B,C
+	end
+	
+	--Create a connection.
+	local Connection = CuT:Connect(Invoked)
+	
+	--Run the assertions.
+	CuT:Fire(1,nil,3)
+	UnitTest:AssertEquals(InvokeA,1,"Parameter not fired.")
+	UnitTest:AssertEquals(InvokeB,nil,"Parameter not fired.")
+	UnitTest:AssertEquals(InvokeC,3,"Parameter not fired.")
+end)
+
+--[[
+Tests the Fire method in a loop.
+--]]
+NexusUnitTesting:RegisterUnitTest("FireLoop",function(UnitTest)
+	--Create the object.
+	local CuT = RobloxEvent.new()
+	
+	--Create the incrementer function.
+	local Sum = 0
+	local function Invoked(Value)
+		Sum = Sum + Value
+	end
+	
+	--Create a connection.
+	local Connection = CuT:Connect(Invoked)
+
+	--Fire using coroutines.
+	for i = 1,10 do
+		coroutine.wrap(function()
+			CuT:Fire(i)
+		end)()
+	end
+	
+	--Run the assertions.
+	UnitTest:AssertEquals(Sum,1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10,"Not all parameters passed")
+end)
+
+--[[
+Tests the Fire method with a table to ensure no re-encoding is done.
+--]]
+NexusUnitTesting:RegisterUnitTest("FireTable",function(UnitTest)
+	--Create the object.
+	local CuT = RobloxEvent.new()
+	
+	--Create the incrementer function.
+	local InvokeA,InvokeB
+	local TableA,TableB = {1,2,3},{1,2,3}
+	local function Invoked(A,B)
+		InvokeA,InvokeB = A,B
+	end
+	
+	--Create a connection.
+	local Connection = CuT:Connect(Invoked)
+	
+	--Run the assertions.
+	CuT:Fire(TableA,TableB)
+	UnitTest:AssertSame(InvokeA,TableA,"Parameter not the same.")
+	UnitTest:AssertSame(InvokeB,TableB,"Parameter not the same.")
+	UnitTest:AssertNotSame(InvokeA,InvokeB,"Invoked properties are the same.")
+end)
+
+--[[
 Tests the Disconnect method.
 --]]
 NexusUnitTesting:RegisterUnitTest("Disconnect",function(UnitTest)

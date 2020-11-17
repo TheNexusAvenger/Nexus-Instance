@@ -68,8 +68,8 @@ function RobloxEvent:Connect(Function)
 	local Connection = NexusConnection.new(self,Function)
 	
 	--Set up the bindable event.
-	local BindableEventConnection = self.BindableEvent.Event:Connect(function(...)
-		Connection:Fire(...)
+	local BindableEventConnection = self.BindableEvent.Event:Connect(function()
+		Connection:Fire(unpack(self.LastArguments,1,self.TotalLastArguements))
 	end)
 	
 	--Store the connections.
@@ -84,7 +84,9 @@ end
 Fires the event.
 --]]
 function RobloxEvent:Fire(...)
-	self.BindableEvent:Fire(...)
+	self.LastArguments = {...}
+	self.TotalLastArguements = select("#",...)
+	self.BindableEvent:Fire()
 end
 
 --[[
@@ -92,7 +94,8 @@ Yields the current thread until this signal
 is fired. Returns what was fired to the signal.
 --]]
 function RobloxEvent:Wait()
-	return self.BindableEvent.Event:Wait()
+	self.BindableEvent.Event:Wait()
+	return unpack(self.LastArguments,1,self.TotalLastArguements)
 end
 
 
