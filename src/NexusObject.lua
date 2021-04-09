@@ -181,6 +181,13 @@ function NexusObject:__tostring()
 end
 
 --[[
+Returns if the object is equal to another object.
+--]]
+function NexusObject:__eq(OtherObject)
+	return rawequal(self,OtherObject)
+end
+
+--[[
 Initializes the super class. The paramters given
 by "..." are passed into the constructor of the
 super class (__new(...)). It should be called
