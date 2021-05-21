@@ -42,7 +42,7 @@ NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("Constructor"):SetRun(fu
 end))
 
 --[[
-Tests the AddPropertyValidator and AddGenericPropertyValidator method.
+Tests the AddPropertyValidator and AddGenericPropertyValidator methods.
 --]]
 NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("AddPropertyValidator"):SetRun(function(self)
     --Create the object.
@@ -72,6 +72,35 @@ NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("AddPropertyValidator"):
     self:AssertEquals(self.CuT.TestValue2,"Test_Value2_TestValue2")
 end))
 
+--[[
+Tests the AddPropertyFinalizer and AddGenericPropertyFinalizer methods.
+--]]
+NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("AddPropertyFinalizer"):SetRun(function(self)
+    --Create the object.
+    self.CuT = NexusInstance.new()
+
+    --Add 3 finalizers.
+    local Value1s,Value2s = {},{}
+    self.CuT:AddPropertyFinalizer("TestValue",function(Name,Value)
+        table.insert(Value1s,Name.."_"..Value.."_"..self.CuT.TestValue.."_1")
+    end)
+    self.CuT:AddGenericPropertyFinalizer(function(Name,Value)
+        if Name == "TestValue" then
+            table.insert(Value1s,Name.."_"..Value.."_"..self.CuT.TestValue.."_2")
+        else
+            table.insert(Value2s,Name.."_"..Value.."_"..self.CuT.TestValue2.."_2")
+        end
+    end)
+    self.CuT:AddPropertyFinalizer("TestValue",function(Name,Value)
+        table.insert(Value1s,Name.."_"..Value.."_"..self.CuT.TestValue.."_3")
+    end)
+
+    --Set the values and assert they are correct.
+    self.CuT.TestValue = "Test"
+    self.CuT.TestValue2 = "Test"
+    self:AssertEquals(Value1s,{"TestValue_Test_Test_2","TestValue_Test_Test_1","TestValue_Test_Test_3"})
+    self:AssertEquals(Value2s,{"TestValue2_Test_Test_2"})
+end))
 
 --[[
 Test the LockProperty function.

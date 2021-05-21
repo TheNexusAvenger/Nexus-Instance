@@ -63,6 +63,8 @@ function NexusInstance:__InitInternalProperties()
     self.__InternalProperties = {}
     self.__GenericPropertyValidators = {}
     self.__PropertyValidators = {}
+    self.__GenericPropertyFinalizers = {}
+    self.__PropertyFinalizers = {}
     self.__HiddenProperties = {}
     self.__LockedProperties = {}
     self.__BlockNextChangedSignals = {}
@@ -73,6 +75,8 @@ function NexusInstance:__InitInternalProperties()
     --Lock the internal states.
     self:LockProperty("__GenericPropertyValidators")
     self:LockProperty("__PropertyValidators")
+    self:LockProperty("__GenericPropertyFinalizers")
+    self:LockProperty("__PropertyFinalizers")
     self:LockProperty("__HiddenProperties")
     self:LockProperty("__LockedProperties")
     self:LockProperty("__BlockNextChangedSignals")
@@ -89,6 +93,8 @@ function NexusInstance:__InitMetaMethods()
     --Set up the internal state.
     local InternalProperties = self.__InternalProperties
     local GenericPropertyValidators = self.__GenericPropertyValidators
+    local PropertyFinalizers = self.__PropertyFinalizers
+    local GenericPropertyFinalizers = self.__GenericPropertyFinalizers
     local PropertyValidators = self.__PropertyValidators
     local HiddenProperties = self.__HiddenProperties
     local LockedProperties = self.__LockedProperties
@@ -138,6 +144,18 @@ function NexusInstance:__InitMetaMethods()
         --Change the property.
         rawset(InternalProperties,Index,Value)
         
+        --Invoke the finalizers.
+        --Will prevent sending changed signals if there is a problem.
+        for _,Finalizer in pairs(GenericPropertyFinalizers) do
+            Finalizer(Index,Value)
+        end
+        local Finalizers = PropertyFinalizers[Index]
+        if Finalizers then
+            for _,Finalizer in pairs(Finalizers) do
+                Finalizer(Index,Value)
+            end
+        end
+
         --Return if the event is hidden.
         if BlockNextChangedSignals[Index] then
             BlockNextChangedSignals[Index] = nil
@@ -174,6 +192,27 @@ function NexusInstance:AddPropertyValidator(PropertyName,Validator)
         self.__PropertyValidators[PropertyName] = {}
     end
     table.insert(self.__PropertyValidators[PropertyName],Validator)
+end
+
+--[[
+Adds a finalizer for when a property is set.
+This is intended to prevent invoking changed events
+if there is a problem.
+--]]
+function NexusInstance:AddGenericPropertyFinalizer(Finalizer)
+    table.insert(self.__GenericPropertyFinalizers,Finalizer)
+end
+
+--[[
+Adds a finalizer for when a given property is set.
+This is intended to prevent invoking changed events
+if there is a problem.
+--]]
+function NexusInstance:AddPropertyFinalizer(PropertyName,Finalizer)
+    if not self.__PropertyFinalizers[PropertyName] then
+        self.__PropertyFinalizers[PropertyName] = {}
+    end
+    table.insert(self.__PropertyFinalizers[PropertyName],Finalizer)
 end
 
 --[[
