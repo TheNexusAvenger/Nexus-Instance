@@ -56,8 +56,10 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("Connect"):SetRun(function
     --Run the assertions.
     self:AssertTrue(Connection1:IsA("NexusConnection"),"Connection class is incorrect.")
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,3,"Event not fired the correct amount of times.")
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,6,"Event not fired the correct amount of times.")
 end))
 
@@ -78,15 +80,19 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("Disconnected"):SetRun(fun
     
     --Run the assertions.
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,3,"Event not fired the correct amount of times.")
     Connection1:Disconnect()
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,5,"Event not fired the correct amount of times.")
     Connection2:Disconnect()
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,6,"Event not fired the correct amount of times.")
     Connection3:Disconnect()
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,6,"Event not fired the correct amount of times.")
 end))
 
@@ -105,6 +111,7 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("Fire"):SetRun(function(se
     
     --Run the assertions.
     self.CuT:Fire(1,2,3)
+    wait()
     self:AssertEquals(InvokeA,1,"Parameter not fired.")
     self:AssertEquals(InvokeB,2,"Parameter not fired.")
     self:AssertEquals(InvokeC,3,"Parameter not fired.")
@@ -125,6 +132,7 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("Fire"):SetRun(function(se
     
     --Run the assertions.
     self.CuT:Fire(1,nil,3)
+    wait()
     self:AssertEquals(InvokeA,1,"Parameter not fired.")
     self:AssertEquals(InvokeB,nil,"Parameter not fired.")
     self:AssertEquals(InvokeC,3,"Parameter not fired.")
@@ -151,6 +159,7 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("FireLoop"):SetRun(functio
     end
     
     --Run the assertions.
+    wait()
     self:AssertEquals(Sum,1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10,"Not all parameters passed")
 end))
 
@@ -170,6 +179,7 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("FireTable"):SetRun(functi
     
     --Run the assertions.
     self.CuT:Fire(TableA,TableB)
+    wait()
     self:AssertSame(InvokeA,TableA,"Parameter not the same.")
     self:AssertSame(InvokeB,TableB,"Parameter not the same.")
     self:AssertNotSame(InvokeA,InvokeB,"Invoked properties are the same.")
@@ -192,9 +202,11 @@ NexusUnitTesting:RegisterUnitTest(RobloxEventTest.new("Disconnect"):SetRun(funct
     
     --Run the assertions.
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,3,"Event not fired the correct amount of times.")
     self.CuT:Disconnect()
     self.CuT:Fire()
+    wait()
     self:AssertEquals(TimesInvoked,3,"Event not fired the correct amount of times.")
 end))
 

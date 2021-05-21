@@ -233,14 +233,16 @@ NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("GetPropertyChangedSigna
 
     --Change the property and assert it was called.
     self.CuT.TestChange = "Test2"
+    wait()
     self:AssertSame(TimesCalled1,1,"Event was not called a correct amount of times.")
     self:AssertSame(TimesCalled2,1,"Event was not called a correct amount of times.")
 
     --Fail the unit test if changed was fired after destroying.
     self.CuT:Destroy()
     self.CuT.TestChange = "Test3"
-    self:AssertSame(TimesCalled1,1,"Event was called after destroying..")
-    self:AssertSame(TimesCalled2,1,"Event was called after destroying..")
+    wait()
+    self:AssertSame(TimesCalled1,1,"Event was called after destroying.")
+    self:AssertSame(TimesCalled2,1,"Event was called after destroying.")
 end))
 
 --[[
