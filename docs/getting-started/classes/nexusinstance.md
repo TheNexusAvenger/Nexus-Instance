@@ -29,6 +29,16 @@ to validate changes to any property when a property is changed.
 Adds a [`NexusPropertyValidator`](propertyvalidator/nexuspropertyvalidator.md)
 to validate changes to properties when the property is changed.
 
+### `NexusInstance:AddGenericPropertyFinalizer(Callback<Name,Value>)`
+Adds a finalizer for when a property is set.
+This is intended to prevent invoking changed events
+if there is a problem.
+
+### `NexusInstance:AddPropertyFinalizer(PropertyName,Callback<Name,Value>)`
+Adds a finalizer for when a given property is set.
+This is intended to prevent invoking changed events
+if there is a problem.
+
 ### `NexusInstance:LockProperty(PropertyName)`
 Locks a property from being modified. If changing the property
 is attempted, an error will be thrown saying `"PROPERTY_NAME is read-only."`
