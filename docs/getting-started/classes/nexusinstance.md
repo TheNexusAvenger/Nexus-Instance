@@ -21,6 +21,10 @@ change is made. When a change is made, the signal is
 invoked with the first parameter of the callback being
 the name of the property that changed.
 
+### `NexusInstance:AddGenericPropertyValidator(Validator)`
+Adds a [`NexusPropertyValidator`](propertyvalidator/nexuspropertyvalidator.md)
+to validate changes to any property when a property is changed.
+
 ### `NexusInstance:AddPropertyValidator(PropertyName,Validator)`
 Adds a [`NexusPropertyValidator`](propertyvalidator/nexuspropertyvalidator.md)
 to validate changes to properties when the property is changed.

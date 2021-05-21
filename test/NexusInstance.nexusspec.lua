@@ -42,6 +42,38 @@ NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("Constructor"):SetRun(fu
 end))
 
 --[[
+Tests the AddPropertyValidator and AddGenericPropertyValidator method.
+--]]
+NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("AddPropertyValidator"):SetRun(function(self)
+    --Create the object.
+    self.CuT = NexusInstance.new()
+
+    --Add 3 validators.
+    self.CuT:AddPropertyValidator("TestValue",{
+        ValidateChange = function(_,Object,Name,Value)
+            return Value.."_Value1"
+        end,
+    })
+    self.CuT:AddGenericPropertyValidator({
+        ValidateChange = function(_,Object,Name,Value)
+            return Value.."_Value2_"..Name
+        end,
+    })
+    self.CuT:AddPropertyValidator("TestValue",{
+        ValidateChange = function(_,Object,Name,Value)
+            return Value.."_Value3"
+        end,
+    })
+
+    --Set the values and assert they are correct.
+    self.CuT.TestValue = "Test"
+    self.CuT.TestValue2 = "Test"
+    self:AssertEquals(self.CuT.TestValue,"Test_Value2_TestValue_Value1_Value3")
+    self:AssertEquals(self.CuT.TestValue2,"Test_Value2_TestValue2")
+end))
+
+
+--[[
 Test the LockProperty function.
 --]]
 NexusUnitTesting:RegisterUnitTest(NexusInstanceTest.new("LockProperty"):SetRun(function(self)

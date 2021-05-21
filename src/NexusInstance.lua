@@ -61,6 +61,7 @@ Sets up the internal properties.
 function NexusInstance:__InitInternalProperties()
     --Set up the properties.
     self.__InternalProperties = {}
+    self.__GenericPropertyValidators = {}
     self.__PropertyValidators = {}
     self.__HiddenProperties = {}
     self.__LockedProperties = {}
@@ -70,6 +71,7 @@ function NexusInstance:__InitInternalProperties()
     self.Changed = self.__ChangedEvent
     
     --Lock the internal states.
+    self:LockProperty("__GenericPropertyValidators")
     self:LockProperty("__PropertyValidators")
     self:LockProperty("__HiddenProperties")
     self:LockProperty("__LockedProperties")
@@ -86,6 +88,7 @@ Sets up the meta methods.
 function NexusInstance:__InitMetaMethods()
     --Set up the internal state.
     local InternalProperties = self.__InternalProperties
+    local GenericPropertyValidators = self.__GenericPropertyValidators
     local PropertyValidators = self.__PropertyValidators
     local HiddenProperties = self.__HiddenProperties
     local LockedProperties = self.__LockedProperties
@@ -122,6 +125,9 @@ function NexusInstance:__InitMetaMethods()
         end
         
         --Validate the value.
+        for _,Validator in pairs(GenericPropertyValidators) do
+            Value = Validator:ValidateChange(self,Index,Value)
+        end
         local Validators = PropertyValidators[Index]
         if Validators then
             for _,Validator in pairs(Validators) do
@@ -150,6 +156,14 @@ function NexusInstance:__InitMetaMethods()
         end
         ChangedBindableEvent:Fire(Index)
     end
+end
+
+--[[
+Adds a validator that is called for all values.
+These are called before any property-specific validators.
+--]]
+function NexusInstance:AddGenericPropertyValidator(Validator)
+    table.insert(self.__GenericPropertyValidators,Validator)
 end
 
 --[[
