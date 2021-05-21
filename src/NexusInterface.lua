@@ -23,9 +23,9 @@ the class. The purpose of this is to add attributes
 to the class.
 --]]
 function NexusInterface:__classextended(OtherClass)
-	OtherClass.RequiredAttributes = {}
+    OtherClass.RequiredAttributes = {}
 end
-	
+    
 --[[
 Sets an attribute as required for an object.
 Although it is intended to be a name of a function,
@@ -33,7 +33,7 @@ it can be any type, and can be implemented
 after the constructor is run.
 --]]
 function NexusInterface:MustImplement(Attribute)
-	table.insert(self.RequiredAttributes,Attribute)
+    table.insert(self.RequiredAttributes,Attribute)
 end
 
 --[[
@@ -42,16 +42,16 @@ an object based on the interface. If no attributes
 are missing, an empty list is returned.
 --]]
 function NexusInterface:GetMissingAttributes(Object)
-	--Get the missing attributes.
-	local MissingAttributes = {}
-	for _,Attribute in pairs(self.RequiredAttributes) do
-		if not Object[Attribute] then
-			table.insert(MissingAttributes,Attribute)
-		end
-	end
-	
-	--Return the missing attributes.
-	return MissingAttributes
+    --Get the missing attributes.
+    local MissingAttributes = {}
+    for _,Attribute in pairs(self.RequiredAttributes) do
+        if not Object[Attribute] then
+            table.insert(MissingAttributes,Attribute)
+        end
+    end
+    
+    --Return the missing attributes.
+    return MissingAttributes
 end
 
 

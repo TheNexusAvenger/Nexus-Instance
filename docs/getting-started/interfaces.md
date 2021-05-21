@@ -65,11 +65,11 @@ CustomClass:Implements(CustomInterface)
 
 --Implement the methods.
 function CustomClass:()
-	return self.GetClassName
+    return self.GetClassName
 end
 
 function CustomClass:GetName()
-	return "TestClass"
+    return "TestClass"
 end
 
 --Use the methods.
@@ -81,9 +81,9 @@ print(CustomClass:GetName()) --"TestClass"
 ## Implementing Methods
 
 !!! warning
-	This is supported, but is considered a bad practice.
-	It is recommended to use proper classes with inheritance
-	for this.
+    This is supported, but is considered a bad practice.
+    It is recommended to use proper classes with inheritance
+    for this.
 
 If you want to implement a method for all classes
 that implement the behavior, it can be done as if
@@ -106,7 +106,7 @@ CustomInterface:MustImplement("GetClassName")
 
 --Implement a method in the interface.
 function CustomInterface:GetName()
-	return "TestClass"
+    return "TestClass"
 end
 
 --Create a class.
@@ -116,7 +116,7 @@ CustomClass:Implements(CustomInterface)
 
 --Implement the method.
 function CustomClass:()
-	return self.GetClassName
+    return self.GetClassName
 end
 
 --Use the methods.

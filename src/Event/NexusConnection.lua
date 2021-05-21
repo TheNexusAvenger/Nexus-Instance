@@ -19,31 +19,31 @@ NexusConnection:SetClassName(CLASS_NAME)
 Creates an instance of the connection.
 --]]
 function NexusConnection:__new(Event,ConnectionFunction)
-	self:InitializeSuper()
-	self.Event = Event
-	self.ConnectionFunction = ConnectionFunction
-	self.Connected = true
+    self:InitializeSuper()
+    self.Event = Event
+    self.ConnectionFunction = ConnectionFunction
+    self.Connected = true
 end
 
 --[[
 Fires the connection.
 --]]
 function NexusConnection:Fire(...)
-	if self.Connected then
-		self.ConnectionFunction(...)
-	end
+    if self.Connected then
+        self.ConnectionFunction(...)
+    end
 end
 
 --[[
 Disconnects the connection from the event.
 --]]
 function NexusConnection:Disconnect()
-	if self.Connected then
-		self.Connected = false
-		if self.Event then
-			self.Event:Disconnected(self)
-		end
-	end
+    if self.Connected then
+        self.Connected = false
+        if self.Event then
+            self.Event:Disconnected(self)
+        end
+    end
 end
 
 

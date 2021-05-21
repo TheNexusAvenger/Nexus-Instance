@@ -17,20 +17,20 @@ local TestClass = {}
 Constructor for TestClass.
 --]]
 function TestClass.new(Value)
-	--Create the base object.
-	local Object = {Value = Value}
-	setmetatable(Object,TestClass)
-	TestClass.__index = TestClass
-	
-	--Return the object.
-	return Object
+    --Create the base object.
+    local Object = {Value = Value}
+    setmetatable(Object,TestClass)
+    TestClass.__index = TestClass
+    
+    --Return the object.
+    return Object
 end
 
 --[[
 Returns the value of the class.
 --]]
 function TestClass:GetValue()
-	return self.Value
+    return self.Value
 end
 
 --Create an instance of the class.
@@ -48,15 +48,15 @@ local TestClass = NexusInstance:Extend()
 Constructor for TestClass.
 --]]
 function TestClass:__new(Value)
-	--Set the value.
-	self.Value = Value
+    --Set the value.
+    self.Value = Value
 end
 
 --[[
 Returns the value of the class.
 --]]
 function TestClass:GetValue()
-	return self.Value
+    return self.Value
 end
 
 --Create an instance of the class.
@@ -80,29 +80,29 @@ local TestSubClass = TestClass:Extend()
 Constructor for TestClass.
 --]]
 function TestClass:__new(Value)
-	--Set the value.
-	self.Value = Value
+    --Set the value.
+    self.Value = Value
 end
 
 --[[
 Returns the value of the class.
 --]]
 function TestClass:GetValue()
-	return self.Value
+    return self.Value
 end
 
 --[[
 Constructor for TestSubClass.
 --]]
 function TestSubClass:__new(Value)
-	self:InitializeSuper(Value)
+    self:InitializeSuper(Value)
 end
 
 --[[
 Returns the value of the super class plus one.
 --]]
 function TestClass:GetValuePlusOne()
-	return self.super:GetValue() + 1
+    return self.super:GetValue() + 1
 end
 
 --Create an instance of the class.
@@ -144,7 +144,7 @@ this will result in an error for not
 implementing the function test.
 --]]
 function TestClass:Test()
-	--Implementation
+    --Implementation
 end
 
 
@@ -171,23 +171,23 @@ local TestClass = NexusInstance:Extend()
 Constructor for TestClass.
 --]]
 function TestClass:__new(Value)
-	self:InitializeSuper()
-	
-	--Set the value.
-	self.Value = Value
-	
-	--Set up a basic changed event.
-	self.Changed:Connect(function()
-		self:HideNextPropertyChange("Value")
-		self.Value = self.Value ^ 2
-	end)
+    self:InitializeSuper()
+    
+    --Set the value.
+    self.Value = Value
+    
+    --Set up a basic changed event.
+    self.Changed:Connect(function()
+        self:HideNextPropertyChange("Value")
+        self.Value = self.Value ^ 2
+    end)
 end
 
 --[[
 Returns the value of the class.
 --]]
 function TestClass:GetValue()
-	return self.Value
+    return self.Value
 end
 
 --Create an instance of the class.
@@ -212,18 +212,18 @@ local TestClass = NexusInstance:Extend()
 Constructor for TestClass.
 --]]
 function TestClass:__new(Value)
-	self:InitializeSuper()
-	
-	--Set the value.
-	self.Value = Value
-	self:LockProperty("Value")
+    self:InitializeSuper()
+    
+    --Set the value.
+    self.Value = Value
+    self:LockProperty("Value")
 end
 
 --[[
 Returns the value of the class.
 --]]
 function TestClass:GetValue()
-	return self.Value
+    return self.Value
 end
 
 --Create an instance of the class.
@@ -280,18 +280,18 @@ local TestClass = NexusInstance:Extend()
 Constructor for TestClass.
 --]]
 function TestClass:__new(Value)
-	self:InitializeSuper()
-	
-	--Set the value.
-	self.Value = Value
-	self:LockProperty("Value")
+    self:InitializeSuper()
+    
+    --Set the value.
+    self.Value = Value
+    self:LockProperty("Value")
 end
 
 --[[
 Returns the object as a string.
 --]]
 function TestClass:__tostring()
-	return "Test: "..self.Value
+    return "Test: "..self.Value
 end
 
 --Create an instance of the class.

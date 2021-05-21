@@ -58,8 +58,8 @@ ExtendedClass:SetClassName("ExtendedClass")
 
 --Overrides the constructor.
 function ExtendedClass:__new(Value1,Value2)
-	self.Value1 = Value1
-	self.Value2 = Value2
+    self.Value1 = Value1
+    self.Value2 = Value2
 end
 
 --Base extension of ExtendedClass.
@@ -68,8 +68,8 @@ ExtendedClass2:SetClassName("ExtendedClass2")
 
 --Overrides the constructor.
 function ExtendedClass2:__new(...)
-	self:InitializeSuper(...)
-	self.Value3 = self.Value1 + self.Value2
+    self:InitializeSuper(...)
+    self.Value3 = self.Value1 + self.Value2
 end
 
 --Create the object.

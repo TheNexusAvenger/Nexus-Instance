@@ -1,15 +1,15 @@
 {
-	"name": "Nexus-Instance",
-	"tree": {
-		"$className": "DataModel",
-		"ReplicatedStorage": {
-			"$className": "ReplicatedStorage",
-			"NexusInstance": {
-				"$path": "./src"
-			},
-			"NexusInstanceTests": {
-				"$path": "./test"
-			}
-		}
-	}
+    "name": "Nexus-Instance",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "NexusInstance": {
+                "$path": "./src"
+            },
+            "NexusInstanceTests": {
+                "$path": "./test"
+            }
+        }
+    }
 }

@@ -27,22 +27,22 @@ NexusEventCreator:SetClassName(CLASS_NAME)
 Returns if Roblox events should be used.
 --]]
 function NexusEventCreator:UseRobloxEvents()
-	if USE_NON_ROBLOX_EVENTS then
-		return false
-	else
-		return Instance ~= nil
-	end
+    if USE_NON_ROBLOX_EVENTS then
+        return false
+    else
+        return Instance ~= nil
+    end
 end
 
 --[[
 Creates an event.
 --]]
 function NexusEventCreator:CreateEvent()
-	if NexusEventCreator:UseRobloxEvents() then
-		return RobloxEvent.new()
-	else
-		return LuaEvent.new()
-	end
+    if NexusEventCreator:UseRobloxEvents() then
+        return RobloxEvent.new()
+    else
+        return LuaEvent.new()
+    end
 end
 
 
