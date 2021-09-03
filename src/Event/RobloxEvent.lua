@@ -85,7 +85,7 @@ function RobloxEvent:Connect(Function)
         self.LastArgumentsStrong[Arguments] = nil
 
         --Fire the event.
-        Connection:Fire(unpack(Arguments.Arguments,1,Arguments.Total))
+        Connection:Fire(table.unpack(Arguments))
     end)
 
     --Store the connections.
@@ -102,10 +102,7 @@ Fires the event.
 function RobloxEvent:Fire(...)
     --Store the arguments.
     local UUID = HttpService:GenerateGUID()
-    local Arguments = {
-        Arguments = {...},
-        Total = select("#",...),
-    }
+    local Arguments = table.pack(...)
     self.LastArgumentsStrong[UUID] = Arguments
     self.LastArguments[UUID] = Arguments
 
@@ -124,7 +121,7 @@ function RobloxEvent:Wait()
     --Return the arguments.
     local Arguments = self.LastArguments[UUID]
     self.LastArgumentsStrong[Arguments] = nil
-    return unpack(Arguments.Arguments,1,Arguments.Total)
+    return table.unpack(Arguments)
 end
 
 
