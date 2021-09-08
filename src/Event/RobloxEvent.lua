@@ -29,6 +29,7 @@ function RobloxEvent:__new()
     self:InitializeSuper()
     self.Connections = {}
     self.BindableEvent = Instance.new("BindableEvent")
+    self.CurrentWaits = 0
 
     --For deferred events, the arguments need to be stored.
     --LastArgumentsStrong will keep the reference around and prevent
@@ -100,6 +101,10 @@ end
 Fires the event.
 --]]
 function RobloxEvent:Fire(...)
+    --Ignore if there are no connections.
+    --If continued, self.LastArgumentsStrong will be populated and never cleared, leading to a memory leak.
+    if next(self.Connections) == nil and self.CurrentWaits <= 0 then return end
+
     --Store the arguments.
     local UUID = HttpService:GenerateGUID()
     local Arguments = table.pack(...)
@@ -116,7 +121,9 @@ is fired. Returns what was fired to the signal.
 --]]
 function RobloxEvent:Wait()
     --Wait for the event.
+    self.CurrentWaits = self.CurrentWaits + 1
     local UUID = self.BindableEvent.Event:Wait()
+    self.CurrentWaits = self.CurrentWaits - 1
 
     --Return the arguments.
     local Arguments = self.LastArguments[UUID]
