@@ -74,7 +74,7 @@ function NexusInstance:__InitMetaMethods()
 
     --Set up custom indexing.
     local Metatable = {}
-    local IndexMethod = self:__createindexmethod(self.object, self.class, self.class)
+    local IndexMethod = self.object:__createindexmethod(self.object, self.class, self.class)
     Metatable.__index = IndexMethod
     setmetatable(self.object, Metatable)
 
