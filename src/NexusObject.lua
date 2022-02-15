@@ -4,11 +4,7 @@ TheNexusAvenger
 Helper class for creating objects in Lua.
 --]]
 
---Class name of the object.
-local CLASS_NAME = "NexusObject"
-
---Metamethods to pass through.
-local METATABLE_PASSTHROUGH = {
+local METATABLE_METHODS = {
     "__call",
     "__concat",
     "__unm",
@@ -28,13 +24,6 @@ local METATABLE_PASSTHROUGH = {
 
 
 
-local NexusObject = {
-    ClassName = CLASS_NAME,
-    Interfaces = {},
-}
-
-
-
 --[[
 Returns the raw tostring of a table.
 See: https://stackoverflow.com/questions/43285679/is-it-possible-to-bypass-tostring-the-way-rawget-set-bypasses-index-newind
@@ -43,69 +32,112 @@ local function RawToString(Table)
     local Metatable = getmetatable(Table)
     local BaseFunction = Metatable.__tostring
     Metatable.__tostring = nil
-    
+
     local String = tostring(Table)
     Metatable.__tostring = BaseFunction
-    
     return String
 end
 
 --[[
-Returns the first object from the interfaces.
+Creates the referebce to a super class.
 --]]
-local function GetFromInterfaces(Object,Class,Index)
-    for _,Interface in pairs(Class:GetInterfaces(Class)) do
-        local InterfaceReturn = Interface[Index]
-        if InterfaceReturn then
-            return InterfaceReturn
-        end
+local function CreateSuperReference(Object, SuperClass)
+    --Return nil if there is no super class.
+    if SuperClass == nil then
+        return nil
     end
+
+    --Create the super reference.
+    local Super = {}
+    local NextSuperReference = CreateSuperReference(Object, SuperClass.__superclass)
+    local SuperMetatable = {}
+    SuperMetatable.__index = function(_, Index)
+        --Return super.
+        --Special case to prevent recursive errors.
+        if Index == "super" then
+            return NextSuperReference
+        end
+
+        --Get the super reference until it doesn't match.
+        local ObjectValue = Object[Index]
+        local CurrentSuperClass = SuperClass
+        local SuperValue = CurrentSuperClass[Index]
+        while ObjectValue == SuperValue do
+            CurrentSuperClass = CurrentSuperClass.__superclass
+            if CurrentSuperClass == nil then break end
+            SuperValue = CurrentSuperClass[Index]
+        end
+
+        --Return the super value that is different or the object value.
+        return SuperValue or Object[Index]
+    end
+    SuperMetatable.__newindex = Object
+    setmetatable(Super, SuperMetatable)
+
+    --Return the super reference.
+    return Super
 end
 
-
-
 --[[
-Creates an instance of a NexusObject. This is used
-as a base.
+Extends a class.
 --]]
-function NexusObject.new(...)
-    --Create the object.
-    local self = {}
-    self.class = NexusObject
-    self.object = self
-    
-    --Set up the metatable.
-    local Metatable = {}
-    Metatable.__index = function(_,Index)
-        local RawGet = rawget(self,Index)
-        if RawGet then
-            return RawGet
-        end
-        
-        return NexusObject[Index]
+local function ExtendClass(SuperClass)
+    --Create the class.
+    local Class = {}
+    Class.super = SuperClass
+    Class.__superclass = SuperClass
+    Class.__index = Class
+    setmetatable(Class, SuperClass)
+
+    --[[
+    Creates an object.
+    --]]
+    function Class.new(...)
+        --Create the base object.
+        local self = {}
+        self.__index = self
+        self.object = self
+        self.class = SuperClass
+        self.super = CreateSuperReference(self, SuperClass)
+        setmetatable(self, Class)
+
+        --Run the constructor.
+        self:__new(...)
+
+        --Return the object.
+        return self
     end
-    setmetatable(self,Metatable)
-    
+
+    --[[
+    Constructor run for the class.
+    --]]    
+    function Class:__new(...)
+        self:InitializeSuper(...)
+    end
+
     --Add the metamethod passthrough.
-    for _,Name in pairs(METATABLE_PASSTHROUGH) do
-        Metatable[Name] = function(_,...)
-            return self[Name](self,...)
+    if SuperClass then
+        for _, MetatableName in pairs(METATABLE_METHODS) do
+            Class[MetatableName] = SuperClass[MetatableName]
         end
     end
-    
-    --Run the constructor.
-    self:__new(...)
-    
-    --Return the object.
-    return self
+
+    --Call the callback for the class being extended.
+    if SuperClass then
+        SuperClass:__classextended(Class)
+    end
+
+    --Return the created class.
+    return Class
 end
 
---[[
-Constructor run for the class.
---]]
-function NexusObject:__new()
-    
-end
+
+
+--Set up the base Nexus Object class.
+local NexusObject = ExtendClass()
+NexusObject.ClassName = "NexusObject"
+
+
 
 --[[
 Called after extending when another class extends
@@ -113,70 +145,15 @@ the class. The purpose of this is to add attributes
 to the class.
 --]]
 function NexusObject:__classextended(OtherClass)
-    OtherClass.Interfaces = {}
-end
-
---[[
-Creates an __index metamethod for an object. Used to
-setup custom indexing.
---]]
-function NexusObject:__createindexmethod(Object,Class,RootClass)
-    --Set the root class.
-    if not RootClass then
-        RootClass = Class
-    end
-    
-    --Get the method.
-    if Class.super then
-        --[[
-        Returns the value for an index of an object.
-        --]]
-        return function(_,Index)
-            if Index == "super" then
-                --Create a temporary object.
-                local TempObject = {}
-                TempObject.object = Object
-                
-                --Set the metatable to redirect the next "super".
-                local Metatable = {}
-                Metatable.__index = RootClass:__createindexmethod(Object,Class.super,RootClass)
-                Metatable.__newindex = function(_,Index,Value)
-                    Object[Index] = Value
-                end
-                setmetatable(TempObject,Metatable)
-                
-                --Return the temporary object.
-                return TempObject
-            else
-                --Get the normal property from the object or class.
-                local RawReturn = rawget(Object,Index)
-                if RawReturn ~= nil then
-                    return RawReturn
-                end
-                
-                return Class[Index]
-            end
-        end
-    else
-        --[[
-        Returns the value for an index of an object.
-        --]]
-        return function(_,Index)
-            local RawReturn = rawget(Object,Index)
-            if RawReturn ~= nil then
-                return RawReturn
-            end
-            
-            return Class[Index]
-        end
-    end
+    if not self.super then return end
+    self.super:__classextended(OtherClass)
 end
 
 --[[
 Returns the object as a string.
 --]]
 function NexusObject:__tostring()
-    local MemoryAddress = string.sub(RawToString(self),8)
+    local MemoryAddress = string.sub(RawToString(self), 8)
     return tostring(self.ClassName)..": "..tostring(MemoryAddress)
 end
 
@@ -194,9 +171,8 @@ super class (__new(...)). It should be called
 in the constructor of the class.
 --]]
 function NexusObject:InitializeSuper(...)
-    if self.super then
-        self.super:__new(...)
-    end
+    if not self.super then return end
+    self.super:__new(...)
 end
 
 --[[
@@ -208,41 +184,11 @@ function NexusObject:SetClassName(ClassName)
 end
 
 --[[
-Sets the class as implementing a given interface. Should be
-called staticly (right after NexusObject::Extend).
+Extends a class to allow for implementing properties and
+functions while inheriting the super class's behavior.
 --]]
-function NexusObject:Implements(Interface)
-    --Throw an error if the interface isn't an interface.
-    if not Interface:IsA("NexusInterface") then
-        error(tostring(Interface).." is not an interface.")
-    end
-    
-    --Add the interface.
-    table.insert(self.Interfaces,Interface)
-end
-
---[[
-Returns a list of the interfaces that the
-class implements. This includes ones implemented
-by super classes.
---]]
-function NexusObject:GetInterfaces()
-    --Get the super class's interfaces.
-    local Interfaces = {}
-    if self.super then
-        Interfaces = self.super:GetInterfaces()
-    end
-    
-    --Add the classes interfaces.
-    local ClassInterfaces = self.Interfaces
-    if ClassInterfaces then
-        for _,Interface in pairs(ClassInterfaces) do
-             table.insert(Interfaces,Interface)
-        end
-    end
-    
-    --Return the interfaces.
-    return Interfaces
+function NexusObject:Extend()
+    return ExtendClass(self)
 end
 
 --[[
@@ -253,124 +199,14 @@ function NexusObject:IsA(ClassName)
     if self.ClassName == ClassName then
         return true
     end
-    
-    --If an interface matches the name, return true.
-    if self.Interfaces then
-        for _,Interface in pairs(self.Interfaces) do
-            if Interface:IsA(ClassName) then
-                return true
-            end
-        end
-    end
-    
+
     --If a super class exists, return the result of the super.
     if self.super then
         return self.super:IsA(ClassName)
     end
-    
+
     --Return false (no match).
     return false
-end
-
---[[
-Extends a class to allow for implementing properties and
-functions while inheriting the super class's behavior.
---]]
-function NexusObject:Extend()
-    local super = self
-    local ExtendedClass = {
-        super = super,
-    }
-    
-    --[[
-    Creates an instance of the class.
-    --]]
-    function ExtendedClass.new(...)
-        --Create the object.
-        local self = {}
-        self.class = ExtendedClass
-        self.object = self
-        
-        --Set up the metatable.
-        local Metatable = {}
-        Metatable.__index = ExtendedClass:__createindexmethod(self,ExtendedClass)
-        setmetatable(self,Metatable)
-        
-        --Add the metamethod passthrough.
-        for _,Name in pairs(METATABLE_PASSTHROUGH) do
-            Metatable[Name] = function(_,...)
-                return self[Name](self,...)
-            end
-        end
-        
-        --Run the constructor.
-        self:__new(...)
-        
-        --Determine the missing attributes.
-        local MissingAttributes = {}
-        for _,Interface in pairs(self:GetInterfaces()) do
-            for _,Attribute in pairs(Interface:GetMissingAttributes(self)) do
-                table.insert(MissingAttributes,{Interface.ClassName,Attribute})
-            end
-        end
-        
-        --Throw an error if missing attributes exist.
-        if #MissingAttributes > 0 then
-            --Create the message.
-            local ErrorMessage = tostring(self.ClassName).." does not implement the following:"
-            for _,Attribute in pairs(MissingAttributes) do
-                ErrorMessage = ErrorMessage.."\n\t"..tostring(Attribute[1]).."."..tostring(Attribute[2])
-            end
-            
-            --Throw the error.
-            error(ErrorMessage)
-        end
-        
-        --Return the object.
-        return self
-    end
-    
-    --[[
-    Constructor run for the class.
-    --]]
-    function ExtendedClass:__new(...)
-        self:InitializeSuper(...)
-    end
-    
-    --[[
-    Called after extending when another class extends
-    the class. The purpose of this is to add attributes
-    to the class.
-    --]]
-    function ExtendedClass:__classextended(OtherClass)
-        self.super:__classextended(OtherClass)
-    end
-    
-    --Set up the metatable for indexing.
-    local Metatable = {}
-    Metatable.__index = function(_,Index)
-        --Return the value for the class.
-        local ClassReturn = rawget(ExtendedClass,Index)
-        if ClassReturn ~= nil then
-            return ClassReturn
-        end
-        
-        --Return the value for the super classes.
-        local SuperClassReturn = super[Index]
-        if SuperClassReturn ~= nil then
-            return SuperClassReturn
-        end
-        
-        --Return the value for the interfaces.
-        return GetFromInterfaces(ExtendedClass,ExtendedClass,Index)
-    end
-    setmetatable(ExtendedClass,Metatable)
-    
-    --Extend the class.
-    super:__classextended(ExtendedClass)
-    
-    --Return the extended class.
-    return ExtendedClass
 end
 
 
