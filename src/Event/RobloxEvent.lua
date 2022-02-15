@@ -13,12 +13,10 @@ local HttpService = game:GetService("HttpService")
 
 local NexusObjectFolder = script.Parent.Parent
 local NexusObject = require(NexusObjectFolder:WaitForChild("NexusObject"))
-local NexusEvent = require(script.Parent:WaitForChild("NexusEvent"))
 local NexusConnection = require(script.Parent:WaitForChild("NexusConnection"))
 
 local RobloxEvent = NexusObject:Extend()
 RobloxEvent:SetClassName(CLASS_NAME)
-RobloxEvent:Implements(NexusEvent)
 
 
 

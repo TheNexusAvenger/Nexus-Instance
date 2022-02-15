@@ -11,12 +11,10 @@ local CLASS_NAME = "LuaEvent"
 
 local NexusObjectFolder = script.Parent.Parent
 local NexusObject = require(NexusObjectFolder:WaitForChild("NexusObject"))
-local NexusEvent = require(script.Parent:WaitForChild("NexusEvent"))
 local NexusConnection = require(script.Parent:WaitForChild("NexusConnection"))
 
 local LuaEvent = NexusObject:Extend()
 LuaEvent:SetClassName(CLASS_NAME)
-LuaEvent:Implements(NexusEvent)
 
 
 
