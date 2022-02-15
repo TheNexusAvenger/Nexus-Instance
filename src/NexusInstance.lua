@@ -73,22 +73,10 @@ function NexusInstance:__InitMetaMethods()
     local ChangedBindableEvent = self.__ChangedEvent
 
     --Set up custom indexing.
-    local ExistingMetatable = getmetatable(self.object)
     local Metatable = {}
-    local ExistingIndex = ExistingMetatable.__index
+    local IndexMethod = self:__createindexmethod(self.object, self.class, self.class)
+    Metatable.__index = IndexMethod
     setmetatable(self.object, Metatable)
-
-    local function index(_,Index)
-        --Return the internal property.
-        local InternalPropertyValue = InternalProperties[Index]
-        if InternalPropertyValue ~= nil then
-            return InternalPropertyValue
-        end
-
-        --Return the base return.
-        return ExistingIndex[Index]
-    end
-    Metatable.__index = index
 
     --Set up changes.
     Metatable.__newindex = function(_,Index,Value)
@@ -98,7 +86,7 @@ function NexusInstance:__InitMetaMethods()
         end
 
         --Return if the new and old values are the same.
-        if index(self, Index) == Value then
+        if IndexMethod(self, Index) == Value then
             return
         end
 
@@ -145,6 +133,27 @@ function NexusInstance:__InitMetaMethods()
             return
         end
         ChangedBindableEvent:Fire(Index)
+    end
+end
+
+--[[
+Creates an __index metamethod for an object. Used to
+setup custom indexing.
+--]]
+function NexusInstance:__createindexmethod(Object, Class, RootClass)
+    local InternalProperties = self.__InternalProperties
+    local ExistingMetatable = getmetatable(self.object)
+    local ExistingIndex = ExistingMetatable.__index
+
+    return function (_, Index)
+        --Return the internal property.
+        local InternalPropertyValue = InternalProperties[Index]
+        if InternalPropertyValue ~= nil then
+            return InternalPropertyValue
+        end
+
+        --Return the base return.
+        return ExistingIndex[Index]
     end
 end
 
