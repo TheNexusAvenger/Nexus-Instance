@@ -5,25 +5,21 @@ Implements the NexusEvent interface using
 Roblox's BindableEvents.
 --]]
 
-local CLASS_NAME = "RobloxEvent"
-
-
-
 local HttpService = game:GetService("HttpService")
 
 local NexusObjectFolder = script.Parent.Parent
 local NexusObject = require(NexusObjectFolder:WaitForChild("NexusObject"))
 local NexusConnection = require(script.Parent:WaitForChild("NexusConnection"))
 
-local RobloxEvent = NexusObject:Extend()
-RobloxEvent:SetClassName(CLASS_NAME)
+local NexusEvent = NexusObject:Extend()
+NexusEvent:SetClassName("NexusEvent")
 
 
 
 --[[
 Creates an event.
 --]]
-function RobloxEvent:__new()
+function NexusEvent:__new()
     self:InitializeSuper()
     self.Connections = {}
     self.BindableEvent = Instance.new("BindableEvent")
@@ -42,7 +38,7 @@ end
 --[[
 Invoked when a connection is disconnected.
 --]]
-function RobloxEvent:Disconnected(Connection)
+function NexusEvent:Disconnected(Connection)
     --Remove the bindable event connection.
     local BindableEventConnection = self.Connections[Connection]
     if BindableEventConnection then
@@ -56,7 +52,7 @@ end
 --[[
 Disconnects all connected events.
 --]]
-function RobloxEvent:Disconnect()
+function NexusEvent:Disconnect()
     --Get the connections to disconnect.
     local ConnectionsToDisconnect = {}
     for Connection,_ in pairs(self.Connections) do
@@ -73,7 +69,7 @@ end
 Establishes a function to be called whenever
 the event is raised.
 --]]
-function RobloxEvent:Connect(Function)
+function NexusEvent:Connect(Function)
     --Create the connection.
     local Connection = NexusConnection.new(self,Function)
 
@@ -98,7 +94,7 @@ end
 --[[
 Fires the event.
 --]]
-function RobloxEvent:Fire(...)
+function NexusEvent:Fire(...)
     --Ignore if there are no connections.
     --If continued, self.LastArgumentsStrong will be populated and never cleared, leading to a memory leak.
     if next(self.Connections) == nil and self.CurrentWaits <= 0 then return end
@@ -117,7 +113,7 @@ end
 Yields the current thread until this signal
 is fired. Returns what was fired to the signal.
 --]]
-function RobloxEvent:Wait()
+function NexusEvent:Wait()
     --Wait for the event.
     self.CurrentWaits = self.CurrentWaits + 1
     local UUID = self.BindableEvent.Event:Wait()
@@ -131,4 +127,4 @@ end
 
 
 
-return RobloxEvent
+return NexusEvent

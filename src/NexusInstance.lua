@@ -10,7 +10,7 @@ local CLASS_NAME = "NexusInstance"
 
 
 local NexusObject = require(script.Parent:WaitForChild("NexusObject"))
-local NexusEventCreator = require(script.Parent:WaitForChild("Event"):WaitForChild("NexusEventCreator"))
+local NexusEvent = require(script.Parent:WaitForChild("Event"):WaitForChild("NexusEvent"))
 
 local NexusInstance = NexusObject:Extend()
 NexusInstance:SetClassName(CLASS_NAME)
@@ -69,7 +69,7 @@ function NexusInstance:__InitInternalProperties()
     self.__LockedProperties = {}
     self.__BlockNextChangedSignals = {}
     self.__PropertyChanged = {}
-    self.__ChangedEvent = NexusEventCreator:CreateEvent()
+    self.__ChangedEvent = NexusEvent.new()
     self.Changed = self.__ChangedEvent
     
     --Lock the internal states.
@@ -243,7 +243,7 @@ Returns a changed signal specific to the property.
 function NexusInstance:GetPropertyChangedSignal(PropertyName)
     --If there is no event created, create a bindable event.
     if not self.__PropertyChanged[PropertyName] then
-        self.__PropertyChanged[PropertyName] = NexusEventCreator:CreateEvent()
+        self.__PropertyChanged[PropertyName] = NexusEvent.new()
     end
     
     --Return the event.
