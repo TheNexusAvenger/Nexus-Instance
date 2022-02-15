@@ -1,8 +1,7 @@
 --[[
 TheNexusAvenger
 
-Implements the NexusEvent interface using
-Roblox's BindableEvents.
+Sends and listens to events.
 --]]
 
 local HttpService = game:GetService("HttpService")

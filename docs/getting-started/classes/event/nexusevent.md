@@ -1,7 +1,7 @@
-# NexusEvent
-(Extends [NexusInterface](../nexusinterface.md))
+# RobloxEvent
+(Extends [NexusObject](../nexusobject.md))
 
-Interface for an event.
+Sends and listens to events.
 
 ### `static NexusEvent.ClassName`
 The class name of the object. By default, this will

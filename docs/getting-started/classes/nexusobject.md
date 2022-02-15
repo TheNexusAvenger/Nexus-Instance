@@ -32,23 +32,10 @@ to the class.
     have `self.super:__classextended(OtherClass)` if this function
     is overriden. If it isn't, this done implicitly.
 
-### `static NexusObject:__createindexmethod(Object,Class,RootClass)
-Creates the `__index` metamethod for an object. Used to
-setup custom indexing.
-
 ### `static NexusObject:SetClassName(ClassName)`
 Sets the class name of the object. It should be called staticly
 (ex: `ExtendedClass:SetClassName("ClassName")`, not
 `self:SetClassName("ClassName")`).
-
-### `static NexusObject:Implements(NexusInterface)`
-Sets the class as implementing a given interface. It should 
-be called staticly (ex: `ExtendedClass:Implements(Interface)`,
-not `self:Implements(Interface)`).
-
-### `static NexusObject:GetInterfaces()`
-Returns a list of the interfaces that the class implements.
-This includes ones implemented by super classes.
 
 ### `NexusObject.super`
 The super-class of the object. It will have all of the
