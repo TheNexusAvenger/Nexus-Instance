@@ -445,6 +445,32 @@ NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("Metamethods"):SetRun(func
     self:AssertEquals(CuT4 + CuT5,3,"Objects don't add correctly.")
 end))
 
+--[[
+Test getting the unique function for super.
+--]]
+NexusUnitTesting:RegisterUnitTest(NexusObjectTest.new("UniqueSuperFunctions"):SetRun(function(self)
+    --Create 3 classes.
+    local Calls1, Calls2 = 0, 0
+    local ExtendedObject1 = NexusObject:Extend()
+    local ExtendedObject2 = ExtendedObject1:Extend()
+    local ExtendedObject3 = ExtendedObject2:Extend()
+    function ExtendedObject1:Test()
+        Calls1 = Calls1 + 1
+    end
+    function ExtendedObject2:Test()
+        self.super:Test()
+        Calls2 = Calls2 + 1
+    end
+
+    --Run the assertions on the instance of the outer-most class.
+    local CuT = ExtendedObject3.new()
+    self:AssertEquals(CuT.Test, ExtendedObject2.Test, "Test method reference is incorrect.")
+    self:AssertEquals(CuT.super.Test, ExtendedObject1.Test, "Super test method reference is incorrect.")
+    CuT:Test()
+    self:AssertEquals(Calls1, 1, "Test method calls are incorrect.")
+    self:AssertEquals(Calls2, 1, "Test method calls are incorrect.")
+end))
+
 
 
 --Return true to prevent a ModuleScript error.
