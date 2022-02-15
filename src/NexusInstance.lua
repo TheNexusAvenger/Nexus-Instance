@@ -5,15 +5,11 @@ Extends NexusObject to allow for changed singalling
 and locking of properties.
 --]]
 
-local CLASS_NAME = "NexusInstance"
-
-
-
 local NexusObject = require(script.Parent:WaitForChild("NexusObject"))
 local NexusEvent = require(script.Parent:WaitForChild("Event"):WaitForChild("NexusEvent"))
 
 local NexusInstance = NexusObject:Extend()
-NexusInstance:SetClassName(CLASS_NAME)
+NexusInstance:SetClassName("NexusInstance")
 
 
 
@@ -23,36 +19,10 @@ Creates an instance of a Nexus Instance.
 function NexusInstance:__new()
     --Set up the base object.
     self:InitializeSuper()
-    
+
     --Set up the internal properties.
     self:__InitInternalProperties()
-    
-    --Set up the metamethods.
     self:__InitMetaMethods()
-end
-
---[[
-Creates an __index metamethod for an object. Used to
-setup custom indexing.
---]]
-function NexusInstance:__createindexmethod(Object,Class,RootClass)
-    --Get the base method.
-    local BaseIndexMethod = self.super:__createindexmethod(Object,Class,RootClass)
-    
-    --Return a wrapped method.
-    return function(MethodObject,Index)
-        --Return an internal property.
-        local InternalProperties = rawget(Object.object,"__InternalProperties")
-        if InternalProperties then
-            local Value = InternalProperties[Index]
-            if Value ~= nil then
-                return Value
-            end
-        end
-        
-        --Return the base return.
-        return BaseIndexMethod(MethodObject,Index)
-    end
 end
 
 --[[
@@ -71,7 +41,7 @@ function NexusInstance:__InitInternalProperties()
     self.__PropertyChanged = {}
     self.__ChangedEvent = NexusEvent.new()
     self.Changed = self.__ChangedEvent
-    
+
     --Lock the internal states.
     self:LockProperty("__GenericPropertyValidators")
     self:LockProperty("__PropertyValidators")
@@ -101,35 +71,37 @@ function NexusInstance:__InitMetaMethods()
     local BlockNextChangedSignals = self.__BlockNextChangedSignals
     local PropertyChanged = self.__PropertyChanged
     local ChangedBindableEvent = self.__ChangedEvent
-    
+
     --Set up custom indexing.
-    local Metatable = getmetatable(self.object)
-    local ExistingIndex = Metatable.__index
-    
+    local ExistingMetatable = getmetatable(self.object)
+    local Metatable = {}
+    local ExistingIndex = ExistingMetatable.__index
+    setmetatable(self.object, Metatable)
+
     local function index(_,Index)
         --Return the internal property.
-        local InternalPropertyValue = rawget(InternalProperties,Index)
+        local InternalPropertyValue = InternalProperties[Index]
         if InternalPropertyValue ~= nil then
             return InternalPropertyValue
         end
-        
+
         --Return the base return.
-        return ExistingIndex(self,Index)
+        return ExistingIndex[Index]
     end
     Metatable.__index = index
-    
+
     --Set up changes.
     Metatable.__newindex = function(_,Index,Value)
         --Throw an error if the property is locked.
         if LockedProperties[Index] then
             error(tostring(Index).." is read-only.")
         end
-        
+
         --Return if the new and old values are the same.
-        if index(self,Index) == Value then
+        if index(self, Index) == Value then
             return
         end
-        
+
         --Validate the value.
         for _,Validator in pairs(GenericPropertyValidators) do
             Value = Validator:ValidateChange(self,Index,Value)
@@ -140,10 +112,10 @@ function NexusInstance:__InitMetaMethods()
                 Value = Validator:ValidateChange(self,Index,Value)
             end
         end
-        
+
         --Change the property.
-        rawset(InternalProperties,Index,Value)
-        
+        InternalProperties[Index] = Value
+
         --Invoke the finalizers.
         --Will prevent sending changed signals if there is a problem.
         for _,Finalizer in pairs(GenericPropertyFinalizers) do
@@ -161,13 +133,13 @@ function NexusInstance:__InitMetaMethods()
             BlockNextChangedSignals[Index] = nil
             return
         end
-        
+
         --Invoke the property changed event.
         local PropertyChangedEvent = PropertyChanged[Index]
         if PropertyChangedEvent then
             PropertyChangedEvent:Fire()
         end
-        
+
         --Invoke the Changed event.
         if HiddenProperties[Index] then
             return
@@ -245,7 +217,7 @@ function NexusInstance:GetPropertyChangedSignal(PropertyName)
     if not self.__PropertyChanged[PropertyName] then
         self.__PropertyChanged[PropertyName] = NexusEvent.new()
     end
-    
+
     --Return the event.
     return self.__PropertyChanged[PropertyName]
 end
