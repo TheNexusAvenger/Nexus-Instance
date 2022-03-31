@@ -76,7 +76,7 @@ function NexusEvent:Connect(Function)
     local BindableEventConnection = self.BindableEvent.Event:Connect(function(UUID)
         --Get the arguments.
         local Arguments = self.LastArguments[UUID]
-        self.LastArgumentsStrong[Arguments] = nil
+        self.LastArgumentsStrong[UUID] = nil
 
         --Fire the event.
         Connection:Fire(table.unpack(Arguments))
@@ -120,7 +120,7 @@ function NexusEvent:Wait()
 
     --Return the arguments.
     local Arguments = self.LastArguments[UUID]
-    self.LastArgumentsStrong[Arguments] = nil
+    self.LastArgumentsStrong[UUID] = nil
     return table.unpack(Arguments)
 end
 
