@@ -5,22 +5,25 @@ Implements the NexusPropertyValidator by
 checking if the type or class is the same.
 --]]
 
-local CLASS_NAME = "TypePropertyValidator"
-
-
-
 local NexusObjectFolder = script.Parent.Parent
 local NexusObject = require(NexusObjectFolder:WaitForChild("NexusObject"))
 
 local TypePropertyValidator = NexusObject:Extend()
-TypePropertyValidator:SetClassName(CLASS_NAME)
+TypePropertyValidator:SetClassName("TypePropertyValidator")
+
+export type TypePropertyValidator = {
+    new: (Type: string) -> (TypePropertyValidator),
+    Extend: (self: TypePropertyValidator) -> (TypePropertyValidator),
+
+    ValidateChange: (self: TypePropertyValidator, Object: any, ValueName: string, Value: any) -> (any),
+} & NexusObject.NexusObject
 
 
 
 --[[
 Creates an event.
 --]]
-function TypePropertyValidator:__new(Type)
+function TypePropertyValidator:__new(Type: string): ()
     self:InitializeSuper()
     self.Type = Type
 end
@@ -30,9 +33,9 @@ Validates a change to the property of a NexusObject.
 The new value must be returned. If the input is invalid,
 an error should be thrown.
 --]]
-function TypePropertyValidator:ValidateChange(Object,ValueName,Value)
+function TypePropertyValidator:ValidateChange(Object: any, ValueName: string, Value: any)
     --Determine the type.
-    local TypeMatches,ClassMatches = false,false
+    local TypeMatches, ClassMatches = false, false
     local ValueType = typeof(Value)
 
     --Determine if the type matchs.
@@ -59,4 +62,4 @@ end
 
 
 
-return TypePropertyValidator
+return TypePropertyValidator :: TypePropertyValidator

@@ -3,22 +3,32 @@ TheNexusAvenger
 
 Represents an event connection.
 --]]
-
-local CLASS_NAME = "NexusConnection"
-
-
+--!strict
 
 local NexusObjectFolder = script.Parent.Parent
 local NexusObject = require(NexusObjectFolder:WaitForChild("NexusObject"))
 local NexusConnection = NexusObject:Extend()
-NexusConnection:SetClassName(CLASS_NAME)
+NexusConnection:SetClassName("NexusConnection")
+
+export type NexusConnectionEvent<T...> = {
+    Disconnected: (NexusConnectionEvent<T...>) -> (),
+    [string]: any,
+}
+export type NexusConnection<T...> = {
+    new: (Event: NexusConnectionEvent<T...>, ConnectionFunction: (T...) -> ()) -> (NexusConnection<T...>),
+    Extend: (self: NexusConnection<T...>) -> (NexusConnection<T...>),
+
+    Connected: boolean,
+    Fire: (NexusConnectionEvent<T...>, T...) -> (),
+    Disconnect: () -> (),
+} & NexusObject.NexusObject
 
 
 
 --[[
 Creates an instance of the connection.
 --]]
-function NexusConnection:__new(Event,ConnectionFunction)
+function NexusConnection:__new<T...>(Event: NexusConnectionEvent<T...>, ConnectionFunction): ()
     self:InitializeSuper()
     self.Event = Event
     self.ConnectionFunction = ConnectionFunction
@@ -28,7 +38,7 @@ end
 --[[
 Fires the connection.
 --]]
-function NexusConnection:Fire(...)
+function NexusConnection:Fire<T>(...: T): ()
     if self.Connected then
         self.ConnectionFunction(...)
     end
@@ -37,7 +47,7 @@ end
 --[[
 Disconnects the connection from the event.
 --]]
-function NexusConnection:Disconnect()
+function NexusConnection:Disconnect(): ()
     if self.Connected then
         self.Connected = false
         if self.Event then
@@ -48,4 +58,4 @@ end
 
 
 
-return NexusConnection
+return NexusConnection :: NexusConnection<>

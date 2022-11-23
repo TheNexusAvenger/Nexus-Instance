@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Sends and listens to events.
 --]]
+--!strict
 
 local HttpService = game:GetService("HttpService")
 
@@ -13,12 +14,21 @@ local NexusConnection = require(script.Parent:WaitForChild("NexusConnection"))
 local NexusEvent = NexusObject:Extend()
 NexusEvent:SetClassName("NexusEvent")
 
+export type NexusEvent<T...> = {
+    new: () -> (NexusEvent<T...>),
+    Extend: (self: NexusEvent<T...>) -> (NexusEvent<T...>),
+
+    Connect: (self: NexusEvent<T...>, Callback: (T...) -> ()) -> (NexusConnection.NexusConnection<T...>),
+    Fire: (self: NexusEvent<T...>, T...) -> (),
+    Disconnect: (self: NexusEvent<T...>) -> (),
+} & NexusObject.NexusObject
+
 
 
 --[[
 Creates an event.
 --]]
-function NexusEvent:__new()
+function NexusEvent:__new(): ()
     self:InitializeSuper()
     self.Connections = {}
     self.BindableEvent = Instance.new("BindableEvent")
@@ -31,13 +41,13 @@ function NexusEvent:__new()
     --:Wait() are used.
     self.LastArgumentsStrong = {}
     self.LastArguments = {}
-    setmetatable(self.LastArguments,{__mode="v"})
+    setmetatable(self.LastArguments, {__mode="v"})
 end
 
 --[[
 Invoked when a connection is disconnected.
 --]]
-function NexusEvent:Disconnected(Connection)
+function NexusEvent:Disconnected<T...>(Connection: NexusConnection.NexusConnection<T...>): ()
     --Remove the bindable event connection.
     local BindableEventConnection = self.Connections[Connection]
     if BindableEventConnection then
@@ -51,15 +61,15 @@ end
 --[[
 Disconnects all connected events.
 --]]
-function NexusEvent:Disconnect()
+function NexusEvent:Disconnect(): ()
     --Get the connections to disconnect.
     local ConnectionsToDisconnect = {}
-    for Connection,_ in pairs(self.Connections) do
+    for Connection,_ in self.Connections do
         table.insert(ConnectionsToDisconnect,Connection)
     end
     
     --Disconnect the events.
-    for _,Connection in pairs(ConnectionsToDisconnect) do
+    for _,Connection in ConnectionsToDisconnect do
         Connection:Disconnect()
     end
 end
@@ -68,9 +78,9 @@ end
 Establishes a function to be called whenever
 the event is raised.
 --]]
-function NexusEvent:Connect(Function)
+function NexusEvent:Connect<T...>(Callback: (T...) -> ()): NexusConnection.NexusConnection<T...>
     --Create the connection.
-    local Connection = NexusConnection.new(self,Function)
+    local Connection = NexusConnection.new(self, Callback :: any)
 
     --Set up the bindable event.
     local BindableEventConnection = self.BindableEvent.Event:Connect(function(UUID)
@@ -89,11 +99,10 @@ function NexusEvent:Connect(Function)
     return Connection
 end
 
-
 --[[
 Fires the event.
 --]]
-function NexusEvent:Fire(...)
+function NexusEvent:Fire<T>(...: T): ()
     --Ignore if there are no connections.
     --If continued, self.LastArgumentsStrong will be populated and never cleared, leading to a memory leak.
     if next(self.Connections) == nil and self.CurrentWaits <= 0 then return end
@@ -112,7 +121,7 @@ end
 Yields the current thread until this signal
 is fired. Returns what was fired to the signal.
 --]]
-function NexusEvent:Wait()
+function NexusEvent:Wait<T>(): (T)
     --Wait for the event.
     self.CurrentWaits = self.CurrentWaits + 1
     local UUID = self.BindableEvent.Event:Wait()
@@ -126,4 +135,4 @@ end
 
 
 
-return NexusEvent
+return NexusEvent :: NexusEvent<>

@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Helper class for creating objects in Lua.
 --]]
+--!strict
 
 local METATABLE_METHODS = {
     "__call",
@@ -28,7 +29,7 @@ local METATABLE_METHODS = {
 Returns the raw tostring of a table.
 See: https://stackoverflow.com/questions/43285679/is-it-possible-to-bypass-tostring-the-way-rawget-set-bypasses-index-newind
 --]]
-local function RawToString(Table)
+local function RawToString(Table: any): string
     local Metatable = getmetatable(Table)
     local BaseFunction = Metatable.__tostring
     Metatable.__tostring = nil
@@ -41,7 +42,7 @@ end
 --[[
 Creates the referebce to a super class.
 --]]
-local function CreateSuperReference(Object, SuperClass)
+local function CreateSuperReference(Object, SuperClass: {[string]: any}): any
     --Return nil if there is no super class.
     if SuperClass == nil then
         return nil
@@ -81,25 +82,27 @@ end
 --[[
 Extends a class.
 --]]
-local function ExtendClass(SuperClass)
+local function ExtendClass(SuperClass: {[string]: any}?) : NexusObject
     --Create the class.
     local Class = {}
     Class.super = SuperClass
     Class.__superclass = SuperClass
     Class.__index = Class
-    setmetatable(Class, SuperClass)
+    setmetatable(Class :: any, SuperClass)
 
     --[[
     Creates an object.
     --]]
     function Class.new(...)
         --Create the base object.
-        local self = {}
+        local self = {} :: NexusObject
         self.__index = self
         self.object = self
-        self.class = SuperClass
-        self.super = CreateSuperReference(self, SuperClass)
-        setmetatable(self, Class)
+        self.class = Class
+        if SuperClass ~= nil then
+            self.super = (CreateSuperReference(self, SuperClass) :: any) :: NexusObject
+        end
+        setmetatable(self :: any, Class)
 
         --Run the constructor.
         self:__new(...)
@@ -117,7 +120,7 @@ local function ExtendClass(SuperClass)
 
     --Add the metamethod passthrough.
     if SuperClass then
-        for _, MetatableName in pairs(METATABLE_METHODS) do
+        for _, MetatableName in METATABLE_METHODS do
             Class[MetatableName] = SuperClass[MetatableName]
         end
     end
@@ -128,14 +131,32 @@ local function ExtendClass(SuperClass)
     end
 
     --Return the created class.
-    return Class
+    return (Class :: any) :: NexusObject
 end
 
 
 
 --Set up the base Nexus Object class.
-local NexusObject = ExtendClass()
+local NexusObject = ExtendClass() :: NexusObject
 NexusObject.ClassName = "NexusObject"
+
+export type NexusObject = {
+    --Properties.
+    class: {[string]: any},
+    object: NexusObject,
+    super: NexusObject,
+    ClassName: string,
+    [string]: any,
+
+    --Static methods.
+    new: () -> (NexusObject),
+    Extend: (self: NexusObject) -> (NexusObject),
+    SetClassName: (self: NexusObject, ClassName: string) -> (NexusObject),
+
+    --Methods.
+    InitializeSuper: (...any) -> (),
+    IsA: (self: NexusObject, ClassName: string) -> (boolean),
+}
 
 
 
@@ -144,7 +165,7 @@ Called after extending when another class extends
 the class. The purpose of this is to add attributes
 to the class.
 --]]
-function NexusObject:__classextended(OtherClass)
+function NexusObject:__classextended(OtherClass: NexusObject): ()
     if not self.super then return end
     self.super:__classextended(OtherClass)
 end
@@ -152,7 +173,7 @@ end
 --[[
 Returns the object as a string.
 --]]
-function NexusObject:__tostring()
+function NexusObject:__tostring(): string
     local MemoryAddress = string.sub(RawToString(self), 8)
     return tostring(self.ClassName)..": "..tostring(MemoryAddress)
 end
@@ -160,8 +181,8 @@ end
 --[[
 Returns if the object is equal to another object.
 --]]
-function NexusObject:__eq(OtherObject)
-    return rawequal(self,OtherObject)
+function NexusObject:__eq(OtherObject: any): boolean
+    return rawequal(self, OtherObject)
 end
 
 --[[
@@ -170,7 +191,7 @@ by "..." are passed into the constructor of the
 super class (__new(...)). It should be called
 in the constructor of the class.
 --]]
-function NexusObject:InitializeSuper(...)
+function NexusObject:InitializeSuper(...: any): ()
     if not self.super then return end
     self.super:__new(...)
 end
@@ -179,22 +200,23 @@ end
 Sets the class name of the class. Should be
 called staticly (right after NexusObject::Extend).
 --]]
-function NexusObject:SetClassName(ClassName)
+function NexusObject:SetClassName(ClassName: string): NexusObject
     self.ClassName = ClassName
+    return self
 end
 
 --[[
 Extends a class to allow for implementing properties and
 functions while inheriting the super class's behavior.
 --]]
-function NexusObject:Extend()
-    return ExtendClass(self)
+function NexusObject:Extend(): NexusObject
+    return (ExtendClass(self) :: any) :: NexusObject
 end
 
 --[[
 Returns if the instance is or inherits from a class of that name.
 --]]
-function NexusObject:IsA(ClassName)
+function NexusObject:IsA(ClassName: string): boolean
     --If the class name matches the class name, return true.
     if self.ClassName == ClassName then
         return true

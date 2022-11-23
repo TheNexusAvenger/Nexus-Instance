@@ -4,6 +4,7 @@ TheNexusAvenger
 Extends NexusObject to allow for changed singalling
 and locking of properties.
 --]]
+--!strict
 
 local NexusObject = require(script.Parent:WaitForChild("NexusObject"))
 local NexusEvent = require(script.Parent:WaitForChild("Event"):WaitForChild("NexusEvent"))
@@ -11,12 +12,31 @@ local NexusEvent = require(script.Parent:WaitForChild("Event"):WaitForChild("Nex
 local NexusInstance = NexusObject:Extend()
 NexusInstance:SetClassName("NexusInstance")
 
+export type PropertyValidator = {
+    ValidateChange: (self: PropertyValidator, Object: NexusInstance, Index: string, Value: any) -> (any),
+}
+export type NexusInstance = {
+    new: () -> (NexusInstance),
+    Extend: (self: NexusInstance) -> (NexusInstance),
+
+    Changed: NexusEvent.NexusEvent<string>,
+    AddGenericPropertyValidator: (self: NexusInstance, Validator: PropertyValidator) -> (),
+    AddPropertyValidator: (self: NexusInstance, PropertyName: string, Validator: PropertyValidator) -> (),
+    AddGenericPropertyFinalizer: (self: NexusInstance, Finalizer: (string, any) -> (any)) -> (),
+    AddPropertyFinalizer: (self: NexusInstance, PropertyName: string, Finalizer: (string, any) -> (any)) -> (),
+    LockProperty: (self: NexusInstance, PropertyName: string) -> (),
+    HidePropertyChanges: (self: NexusInstance, PropertyName: string) -> (),
+    HideNextPropertyChange: (self: NexusInstance, PropertyName: string) -> (),
+    GetPropertyChangedSignal: (self: NexusInstance, PropertyName: string) -> (NexusEvent.NexusEvent<>),
+    Destroy: () -> (),
+} & NexusObject.NexusObject
+
 
 
 --[[
 Creates an instance of a Nexus Instance.
 --]]
-function NexusInstance:__new()
+function NexusInstance:__new(): ()
     --Set up the base object.
     self:InitializeSuper()
 
@@ -28,7 +48,7 @@ end
 --[[
 Sets up the internal properties.
 --]]
-function NexusInstance:__InitInternalProperties()
+function NexusInstance:__InitInternalProperties(): ()
     --Set up the properties.
     self.__InternalProperties = {}
     self.__GenericPropertyValidators = {}
@@ -59,7 +79,7 @@ end
 --[[
 Sets up the meta methods.
 --]]
-function NexusInstance:__InitMetaMethods()
+function NexusInstance:__InitMetaMethods(): ()
     --Set up the internal state.
     local InternalProperties = self.__InternalProperties
     local GenericPropertyValidators = self.__GenericPropertyValidators
@@ -79,7 +99,7 @@ function NexusInstance:__InitMetaMethods()
     setmetatable(self.object, Metatable)
 
     --Set up changes.
-    Metatable.__newindex = function(_,Index,Value)
+    Metatable.__newindex = function(_, Index: string, Value: any)
         --Throw an error if the property is locked.
         if LockedProperties[Index] then
             error(tostring(Index).." is read-only.")
@@ -91,12 +111,12 @@ function NexusInstance:__InitMetaMethods()
         end
 
         --Validate the value.
-        for _,Validator in pairs(GenericPropertyValidators) do
-            Value = Validator:ValidateChange(self,Index,Value)
+        for _,Validator in GenericPropertyValidators do
+            Value = Validator:ValidateChange(self, Index, Value)
         end
         local Validators = PropertyValidators[Index]
         if Validators then
-            for _,Validator in pairs(Validators) do
+            for _,Validator in Validators do
                 Value = Validator:ValidateChange(self,Index,Value)
             end
         end
@@ -106,13 +126,13 @@ function NexusInstance:__InitMetaMethods()
 
         --Invoke the finalizers.
         --Will prevent sending changed signals if there is a problem.
-        for _,Finalizer in pairs(GenericPropertyFinalizers) do
-            Finalizer(Index,Value)
+        for _,Finalizer in GenericPropertyFinalizers do
+            Finalizer(Index, Value)
         end
         local Finalizers = PropertyFinalizers[Index]
         if Finalizers then
-            for _,Finalizer in pairs(Finalizers) do
-                Finalizer(Index,Value)
+            for _,Finalizer in Finalizers do
+                Finalizer(Index, Value)
             end
         end
 
@@ -140,12 +160,12 @@ end
 Creates an __index metamethod for an object. Used to
 setup custom indexing.
 --]]
-function NexusInstance:__createindexmethod(Object, Class, RootClass)
+function NexusInstance:__createindexmethod(Object: any, Class: any, RootClass: any): ((any, string) -> (any))
     local InternalProperties = self.__InternalProperties
     local ExistingMetatable = getmetatable(self.object)
     local ExistingIndex = ExistingMetatable.__index
 
-    return function (_, Index)
+    return function (_, Index: string): any
         --Return the internal property.
         local InternalPropertyValue = InternalProperties[Index]
         if InternalPropertyValue ~= nil then
@@ -161,18 +181,18 @@ end
 Adds a validator that is called for all values.
 These are called before any property-specific validators.
 --]]
-function NexusInstance:AddGenericPropertyValidator(Validator)
-    table.insert(self.__GenericPropertyValidators,Validator)
+function NexusInstance:AddGenericPropertyValidator(Validator: PropertyValidator): ()
+    table.insert(self.__GenericPropertyValidators, Validator)
 end
 
 --[[
 Adds a validator for a given property.
 --]]
-function NexusInstance:AddPropertyValidator(PropertyName,Validator)
+function NexusInstance:AddPropertyValidator(PropertyName: string, Validator: PropertyValidator): ()
     if not self.__PropertyValidators[PropertyName] then
         self.__PropertyValidators[PropertyName] = {}
     end
-    table.insert(self.__PropertyValidators[PropertyName],Validator)
+    table.insert(self.__PropertyValidators[PropertyName], Validator)
 end
 
 --[[
@@ -180,8 +200,8 @@ Adds a finalizer for when a property is set.
 This is intended to prevent invoking changed events
 if there is a problem.
 --]]
-function NexusInstance:AddGenericPropertyFinalizer(Finalizer)
-    table.insert(self.__GenericPropertyFinalizers,Finalizer)
+function NexusInstance:AddGenericPropertyFinalizer(Finalizer: (string, any) -> (any)): ()
+    table.insert(self.__GenericPropertyFinalizers, Finalizer)
 end
 
 --[[
@@ -189,24 +209,24 @@ Adds a finalizer for when a given property is set.
 This is intended to prevent invoking changed events
 if there is a problem.
 --]]
-function NexusInstance:AddPropertyFinalizer(PropertyName,Finalizer)
+function NexusInstance:AddPropertyFinalizer(PropertyName: string, Finalizer: (string, any) -> (any))
     if not self.__PropertyFinalizers[PropertyName] then
         self.__PropertyFinalizers[PropertyName] = {}
     end
-    table.insert(self.__PropertyFinalizers[PropertyName],Finalizer)
+    table.insert(self.__PropertyFinalizers[PropertyName], Finalizer)
 end
 
 --[[
 Prevents a property from being overriden.
 --]]
-function NexusInstance:LockProperty(PropertyName)
+function NexusInstance:LockProperty(PropertyName: string): ()
     self.__LockedProperties[PropertyName] = true
 end
 
 --[[
 Prevents a property being changed from registering the Changed property.
 --]]
-function NexusInstance:HidePropertyChanges(PropertyName)
+function NexusInstance:HidePropertyChanges(PropertyName: string): ()
     self.__HiddenProperties[PropertyName] = true
 end
 
@@ -214,14 +234,14 @@ end
 Prevents all changed signals being fired for a property change 1 time.
 Does not stack with multiple calls.
 --]]
-function NexusInstance:HideNextPropertyChange(PropertyName)
+function NexusInstance:HideNextPropertyChange(PropertyName: string): ()
     self.__BlockNextChangedSignals[PropertyName] = true
 end
 
 --[[
 Returns a changed signal specific to the property.
 --]]
-function NexusInstance:GetPropertyChangedSignal(PropertyName)
+function NexusInstance:GetPropertyChangedSignal(PropertyName: string): NexusEvent.NexusEvent<>
     --If there is no event created, create a bindable event.
     if not self.__PropertyChanged[PropertyName] then
         self.__PropertyChanged[PropertyName] = NexusEvent.new()
@@ -239,7 +259,7 @@ function NexusInstance:Destroy()
     self.Changed:Disconnect()
 
     --Disconnect the changed signal events.
-    for _,Event in pairs(self.__PropertyChanged) do
+    for _,Event in self.__PropertyChanged do
         Event:Disconnect()
     end
     self.__PropertyChanged = {}
@@ -247,4 +267,4 @@ end
 
 
 
-return NexusInstance
+return NexusInstance :: NexusInstance
