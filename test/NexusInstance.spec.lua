@@ -49,17 +49,17 @@ return function()
 
         it("should work with legacy property validators.", function()
             TestNexusInstance:AddPropertyValidator("TestValue", {
-                ValidateChange = function(_, Object, Name, Value)
+                ValidateChange = function(_, Object, Name, Value: string): string
                     return Value.."_Value1"
                 end,
             })
             TestNexusInstance:AddGenericPropertyValidator({
-                ValidateChange = function(_, Object, Name, Value)
+                ValidateChange = function(_, Object, Name, Value: string): string
                     return Value.."_Value2_"..Name
                 end,
             })
             TestNexusInstance:AddPropertyValidator("TestValue", {
-                ValidateChange = function(_, Object, Name, Value)
+                ValidateChange = function(_, Object, Name, Value: string): string
                     return Value.."_Value3"
                 end,
             })
