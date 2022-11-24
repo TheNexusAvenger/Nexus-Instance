@@ -22,8 +22,8 @@ export type NexusInstance = {
     Changed: NexusEvent.NexusEvent<string>,
     AddGenericPropertyValidator: (self: NexusInstance, Validator: PropertyValidator) -> (),
     AddPropertyValidator: (self: NexusInstance, PropertyName: string, Validator: PropertyValidator) -> (),
-    AddGenericPropertyFinalizer: (self: NexusInstance, Finalizer: (string, any) -> (any)) -> (),
-    AddPropertyFinalizer: (self: NexusInstance, PropertyName: string, Finalizer: (string, any) -> (any)) -> (),
+    AddGenericPropertyFinalizer: (self: NexusInstance, Finalizer: (string, any) -> ()) -> (),
+    AddPropertyFinalizer: (self: NexusInstance, PropertyName: string, Finalizer: (string, any) -> ()) -> (),
     LockProperty: (self: NexusInstance, PropertyName: string) -> (),
     HidePropertyChanges: (self: NexusInstance, PropertyName: string) -> (),
     HideNextPropertyChange: (self: NexusInstance, PropertyName: string) -> (),
@@ -200,7 +200,7 @@ Adds a finalizer for when a property is set.
 This is intended to prevent invoking changed events
 if there is a problem.
 --]]
-function NexusInstance:AddGenericPropertyFinalizer(Finalizer: (string, any) -> (any)): ()
+function NexusInstance:AddGenericPropertyFinalizer(Finalizer: (string, any) -> ()): ()
     table.insert(self.__GenericPropertyFinalizers, Finalizer)
 end
 
@@ -209,7 +209,7 @@ Adds a finalizer for when a given property is set.
 This is intended to prevent invoking changed events
 if there is a problem.
 --]]
-function NexusInstance:AddPropertyFinalizer(PropertyName: string, Finalizer: (string, any) -> (any))
+function NexusInstance:AddPropertyFinalizer(PropertyName: string, Finalizer: (string, any) -> ())
     if not self.__PropertyFinalizers[PropertyName] then
         self.__PropertyFinalizers[PropertyName] = {}
     end
