@@ -12,18 +12,18 @@ local NexusEvent = require(script.Parent:WaitForChild("Event"):WaitForChild("Nex
 local NexusInstance = NexusObject:Extend()
 NexusInstance:SetClassName("NexusInstance")
 
-export type PropertyValidator = {
-    ValidateChange: (self: PropertyValidator, Object: NexusInstance, Index: string, Value: any) -> (any),
+export type LegacyPropertyValidator = {
+    ValidateChange: (self: LegacyPropertyValidator, Object: NexusInstance, Index: string, Value: any) -> (any),
 }
 export type NexusInstance = {
     new: () -> (NexusInstance),
     Extend: (self: NexusInstance) -> (NexusInstance),
 
     Changed: NexusEvent.NexusEvent<string>,
-    AddGenericPropertyValidator: (self: NexusInstance, Validator: PropertyValidator) -> (),
-    AddPropertyValidator: (self: NexusInstance, PropertyName: string, Validator: PropertyValidator) -> (),
-    AddGenericPropertyFinalizer: (self: NexusInstance, Finalizer: (string, any) -> ()) -> (),
-    AddPropertyFinalizer: (self: NexusInstance, PropertyName: string, Finalizer: (string, any) -> ()) -> (),
+    AddGenericPropertyValidator: (self: NexusInstance, Validator: (string, any) -> () | LegacyPropertyValidator) -> (),
+    AddPropertyValidator: (self: NexusInstance, PropertyName: string, Validator: (string, any) -> () | LegacyPropertyValidator) -> (),
+    AddGenericPropertyFinalizer: (self: NexusInstance, Finalizer: (string, any) -> (any)) -> (),
+    AddPropertyFinalizer: (self: NexusInstance, PropertyName: string, Finalizer: (string, any) -> (any)) -> (),
     LockProperty: (self: NexusInstance, PropertyName: string) -> (),
     HidePropertyChanges: (self: NexusInstance, PropertyName: string) -> (),
     HideNextPropertyChange: (self: NexusInstance, PropertyName: string) -> (),
@@ -112,12 +112,12 @@ function NexusInstance:__InitMetaMethods(): ()
 
         --Validate the value.
         for _,Validator in GenericPropertyValidators do
-            Value = Validator:ValidateChange(self, Index, Value)
+            Value = Validator(Index, Value)
         end
         local Validators = PropertyValidators[Index]
         if Validators then
-            for _,Validator in Validators do
-                Value = Validator:ValidateChange(self,Index,Value)
+            for _, Validator in Validators do
+                Value = Validator(Index, Value)
             end
         end
 
@@ -181,14 +181,28 @@ end
 Adds a validator that is called for all values.
 These are called before any property-specific validators.
 --]]
-function NexusInstance:AddGenericPropertyValidator(Validator: PropertyValidator): ()
+function NexusInstance:AddGenericPropertyValidator(Validator: (string, any) -> (any) | LegacyPropertyValidator): ()
+    if typeof(Validator) == "table" then
+        warn("AddGenericPropertyValidator with an object validator is deprecated. Use a validation function instead.")
+        self:AddGenericPropertyValidator(function(Name, Value)
+            return Validator:ValidateChange(self, Name, Value)
+        end)
+        return
+    end
     table.insert(self.__GenericPropertyValidators, Validator)
 end
 
 --[[
 Adds a validator for a given property.
 --]]
-function NexusInstance:AddPropertyValidator(PropertyName: string, Validator: PropertyValidator): ()
+function NexusInstance:AddPropertyValidator(PropertyName: string, Validator: (string, any) -> (any) | LegacyPropertyValidator): ()
+    if typeof(Validator) == "table" then
+        warn("AddPropertyValidator with an object validator is deprecated. Use a validation function instead.")
+        self:AddPropertyValidator(PropertyName, function(Name, Value)
+            return Validator:ValidateChange(self, Name, Value)
+        end)
+        return
+    end
     if not self.__PropertyValidators[PropertyName] then
         self.__PropertyValidators[PropertyName] = {}
     end

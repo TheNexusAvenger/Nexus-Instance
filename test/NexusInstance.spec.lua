@@ -27,9 +27,27 @@ return function()
             expect(TestNexusInstance.FalseValue).to.equal(false)
             expect(TestNexusInstance.object == TestNexusInstance).to.equal(true)
             expect(TestNexusInstance.super.object == TestNexusInstance).to.equal(true)
+            expect(TestNexusInstance.class).to.equal(NexusInstance)
         end)
 
         it("should work with property validators.", function()
+            TestNexusInstance:AddPropertyValidator("TestValue", function(Name, Value)
+                return Value.."_Value1"
+            end)
+            TestNexusInstance:AddGenericPropertyValidator(function(Name, Value)
+                return Value.."_Value2_"..Name
+            end)
+            TestNexusInstance:AddPropertyValidator("TestValue", function(Name, Value)
+                return Value.."_Value3"
+            end)
+
+            TestNexusInstance.TestValue = "Test"
+            TestNexusInstance.TestValue2 = "Test"
+            expect(TestNexusInstance.TestValue).to.equal("Test_Value2_TestValue_Value1_Value3")
+            expect(TestNexusInstance.TestValue2).to.equal("Test_Value2_TestValue2")
+        end)
+
+        it("should work with legacy property validators.", function()
             TestNexusInstance:AddPropertyValidator("TestValue", {
                 ValidateChange = function(_, Object, Name, Value)
                     return Value.."_Value1"

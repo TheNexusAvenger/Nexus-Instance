@@ -15,6 +15,7 @@ return function()
             expect(TestObject:IsA("NexusObject")).to.equal(true)
             expect(TestObject:IsA("BasePart")).to.equal(false)
             expect(TestObject.object).to.equal(TestObject)
+            expect(TestObject.class).to.equal(NexusObject)
         end)
     end)
 
