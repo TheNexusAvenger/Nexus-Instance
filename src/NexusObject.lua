@@ -71,7 +71,7 @@ local function ExtendClass(SuperClass: {[string]: any}?) : NexusObject
     --]]    
     function Class:__new(...)
         if not SuperClass then return end
-        (SuperClass :: NexusObject).__new(self)
+        (SuperClass :: NexusObject).__new(self, ...)
     end
 
     --Add the metamethod passthrough.
