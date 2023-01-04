@@ -14,7 +14,6 @@ return function()
             expect(TestObject.ClassName).to.equal("NexusObject")
             expect(TestObject:IsA("NexusObject")).to.equal(true)
             expect(TestObject:IsA("BasePart")).to.equal(false)
-            expect(TestObject.object).to.equal(TestObject)
             expect(TestObject.class).to.equal(NexusObject)
         end)
     end)
@@ -31,7 +30,7 @@ return function()
             local TestClass1 = NexusObject:Extend()
             local TimesCalled = 0
             function TestClass1:__new()
-                self:InitializeSuper()
+                NexusObject.__new(self)
                 TimesCalled += 1
             end
 
@@ -52,8 +51,8 @@ return function()
             end
 
             local TestObject = TestClass2.new()
-            expect(TestObject:Test()).to.equal("Test2")
-            expect(TestObject.super:Test()).to.equal("Test1")
+            expect(TestObject.Test()).to.equal("Test2")
+            expect(TestObject.super.Test()).to.equal("Test1")
         end)
 
         it("should use super class methods.", function()
@@ -70,24 +69,18 @@ return function()
         it("should pass constructor paramters.", function()
             local TestClass1 = NexusObject:Extend()
             function TestClass1:__new(TestValue)
-                self:InitializeSuper()
+                NexusObject.__new(self)
                 self.TestValue1 = TestValue
             end
             local TestClass2 = TestClass1:Extend()
             function TestClass2:__new(TestValue)
-                self:InitializeSuper(TestValue)
+                TestClass1.__new(self, TestValue)
                 self.TestValue2 = TestValue
             end
 
             local TestObject = (TestClass2 :: {new: (string) -> (NexusObject.NexusObject)}).new("Test")
             expect(TestObject.TestValue1).to.equal("Test")
             expect(TestObject.TestValue2).to.equal("Test")
-        end)
-
-        it("should access properties in super class.", function()
-            local TestObject = NexusObject:Extend().new()
-            TestObject.TestValue = "Test"
-            expect(TestObject.super.TestValue).to.equal("Test")
         end)
 
         it("should copy metamethods.", function()

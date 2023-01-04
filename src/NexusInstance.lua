@@ -38,7 +38,7 @@ Creates an instance of a Nexus Instance.
 --]]
 function NexusInstance:__new(): ()
     --Set up the base object.
-    self:InitializeSuper()
+    NexusObject.__new(self)
 
     --Set up the internal properties.
     self:__InitInternalProperties()
@@ -94,19 +94,28 @@ function NexusInstance:__InitMetaMethods(): ()
 
     --Set up custom indexing.
     local Metatable = {}
-    local IndexMethod = self.object:__createindexmethod(self.object, self.class, self.class)
-    Metatable.__index = IndexMethod
-    setmetatable(self.object, Metatable)
+    local OriginalIndexTable = getmetatable(self).__index
+    setmetatable(self, Metatable)
+    Metatable.__index = function(_, Index: string): any
+        --Return the internal property.
+        local InternalPropertyValue = InternalProperties[Index]
+        if InternalPropertyValue ~= nil then
+            return InternalPropertyValue
+        end
+
+        --Return the base return.
+        return OriginalIndexTable[Index]
+    end
 
     --Set up changes.
-    Metatable.__newindex = function(_, Index: string, Value: any)
+    Metatable.__newindex = function(_, Index: string, Value: any): ()
         --Throw an error if the property is locked.
         if LockedProperties[Index] then
             error(tostring(Index).." is read-only.")
         end
 
         --Return if the new and old values are the same.
-        if IndexMethod(self, Index) == Value then
+        if self[Index] == Value then
             return
         end
 
@@ -126,12 +135,12 @@ function NexusInstance:__InitMetaMethods(): ()
 
         --Invoke the finalizers.
         --Will prevent sending changed signals if there is a problem.
-        for _,Finalizer in GenericPropertyFinalizers do
+        for _, Finalizer in GenericPropertyFinalizers do
             Finalizer(Index, Value)
         end
         local Finalizers = PropertyFinalizers[Index]
         if Finalizers then
-            for _,Finalizer in Finalizers do
+            for _, Finalizer in Finalizers do
                 Finalizer(Index, Value)
             end
         end
@@ -153,27 +162,6 @@ function NexusInstance:__InitMetaMethods(): ()
             return
         end
         ChangedBindableEvent:Fire(Index)
-    end
-end
-
---[[
-Creates an __index metamethod for an object. Used to
-setup custom indexing.
---]]
-function NexusInstance:__createindexmethod(Object: any, Class: any, RootClass: any): ((any, string) -> (any))
-    local InternalProperties = self.__InternalProperties
-    local ExistingMetatable = getmetatable(self.object)
-    local ExistingIndex = ExistingMetatable.__index
-
-    return function (_, Index: string): any
-        --Return the internal property.
-        local InternalPropertyValue = InternalProperties[Index]
-        if InternalPropertyValue ~= nil then
-            return InternalPropertyValue
-        end
-
-        --Return the base return.
-        return ExistingIndex[Index]
     end
 end
 

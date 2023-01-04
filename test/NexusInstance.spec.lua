@@ -9,7 +9,7 @@ local NexusInstance = require(game.ReplicatedStorage.NexusInstance.NexusInstance
 
 return function()
     describe("An instance of NexusInstance", function()
-        local TestNexusInstance = NexusInstance.new()
+        local TestNexusInstance = nil
         beforeEach(function()
             TestNexusInstance = NexusInstance.new()
         end)
@@ -25,8 +25,6 @@ return function()
             expect(TestNexusInstance:IsA("NexusObject")).to.equal(true)
             expect(TestNexusInstance.super:IsA("NexusObject")).to.equal(true)
             expect(TestNexusInstance.FalseValue).to.equal(false)
-            expect(TestNexusInstance.object == TestNexusInstance).to.equal(true)
-            expect(TestNexusInstance.super.object == TestNexusInstance).to.equal(true)
             expect(TestNexusInstance.class).to.equal(NexusInstance)
         end)
 
@@ -124,7 +122,7 @@ return function()
         it("should hide property changes.", function()
             TestNexusInstance.TestHide = "Test"
             TestNexusInstance:HidePropertyChanges("TestHide")
-            
+ 
             local ChangedCalls = 0
             TestNexusInstance.Changed:Connect(function()
                 ChangedCalls += 1
@@ -191,12 +189,15 @@ return function()
             expect(TimesCalled2).to.equal(1)
         end)
     end)
-    
+
     describe("A subclass of NexusInstance", function()
         it("should lock properties.", function()
-            local TestClass = NexusInstance:Extend()
+            NexusInstance.new()
+            NexusInstance.new()
+            print("EVENT "..tostring(NexusInstance.Changed))
+            local TestClass = NexusInstance:Extend():SetClassName("Test")
             function TestClass:__new()
-                self:InitializeSuper()
+                NexusInstance.__new(self)
                 self.TestLock = "Test"
                 self:LockProperty("TestLock")
             end
@@ -212,16 +213,16 @@ return function()
         it("should fire changed events.", function()
             local TestClass = NexusInstance:Extend()
             function TestClass:__new()
-                self:InitializeSuper()
+                NexusInstance.__new(self)
                 self.TestChange = "Test1"
             end
-            
+
             local TestObject = TestClass.new()
             local ChangedEvents = {}
             TestObject.Changed:Connect(function()
                 table.insert(ChangedEvents, TestObject.TestChange)
             end)
-            
+
             TestObject.TestChange = "Test2"
             TestObject.TestChange = "Test2"
             TestObject.TestChange = "Test3"
@@ -234,13 +235,13 @@ return function()
         it("should extend twice.", function()
             local TestClass1 = NexusInstance:Extend():SetClassName("TestClass1")
             function TestClass1:__new()
-                self:InitializeSuper()
+                NexusInstance.__new(self)
                 self.TestProperty1 = "Test1"
             end
 
             local TestClass2 = TestClass1:Extend():SetClassName("TestClass2")
             function TestClass2:__new()
-                self:InitializeSuper()
+                TestClass1.__new(self)
                 self.TestProperty2 = "Test2"
             end
 

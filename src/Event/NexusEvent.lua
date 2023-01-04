@@ -29,7 +29,7 @@ export type NexusEvent<T...> = {
 Creates an event.
 --]]
 function NexusEvent:__new(): ()
-    self:InitializeSuper()
+    NexusObject.__new(self)
     self.Connections = {}
     self.BindableEvent = Instance.new("BindableEvent")
     self.CurrentWaits = 0
@@ -64,12 +64,12 @@ Disconnects all connected events.
 function NexusEvent:Disconnect(): ()
     --Get the connections to disconnect.
     local ConnectionsToDisconnect = {}
-    for Connection,_ in self.Connections do
-        table.insert(ConnectionsToDisconnect,Connection)
+    for Connection, _ in self.Connections do
+        table.insert(ConnectionsToDisconnect, Connection)
     end
     
     --Disconnect the events.
-    for _,Connection in ConnectionsToDisconnect do
+    for _, Connection in ConnectionsToDisconnect do
         Connection:Disconnect()
     end
 end

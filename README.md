@@ -1,7 +1,6 @@
 # Nexus-Instance
 Nexus Instance is a framework meant to simplify the
-creation of classes in Lua, both in terms of syntax and
-being able to have the context of "super". The framework
+creation of classes in Lua. The framework
 includes a base `NexusObject` class, as well as a more
 powerful `NexusInstance` class to allow for locking
 of properties and a `Changed` event.
@@ -35,7 +34,7 @@ print(MyObject2:IsA("MyClass2")) --true
 
 To initialize the class, `__new()` can be defined for each
 class that requires initialization. In the constructor,
-`InitializeSuper(...)` is used to call the parent constructor.
+`__new(self, ...)` is used to call the parent constructor.
 **Calling this is not enforced - be aware of missing calls.**
 
 ```lua
@@ -43,12 +42,12 @@ local MyClass1 = NexusObject:Extend():SetClassName("MyClass1")
 local MyClass2 = MyClass1:Extend():SetClassName("MyClass2")
 
 function MyClass1:__new(Value1)
-    self:InitializeSuper() --NexusObject requires no parameters.
+    NexusObject.__new(self) --NexusObject requires no parameters.
     self.Value1 = Value1
 end
 
 function MyClass2:__new(Value1, Value2)
-    self:InitializeSuper(Value1) --MyClass1 requires a paramter.
+    MyClass1.__new(self, Value1) --MyClass1 requires a paramter.
     self.Value2 = Value2
 end
 
@@ -69,7 +68,7 @@ local MyClass1 = NexusObject:Extend():SetClassName("MyClass1")
 local MyClass2 = MyClass1:Extend():SetClassName("MyClass2")
 
 function MyClass1:__new(Value1)
-    self:InitializeSuper()
+    NexusObject.__new(self)
     self.Value1 = Value1
 end
 
@@ -78,7 +77,7 @@ function MyClass1:GetValue()
 end
 
 function MyClass2:__new(Value1, Value2)
-    self:InitializeSuper(Value1)
+    MyClass1.__new(self, Value1)
     self.Value2 = Value2
 end
 
@@ -119,7 +118,7 @@ make sure to call the `Destroy` method if it is overriden.
 local MyClass = NexusInstance:Extend():SetClassName("MyClass")
 
 function MyClass:Destroy()
-    self.super:Destroy() --Calls NexusInstance:Destroy()
+    NexusInstance.Destroy(self) --Calls NexusInstance:Destroy()
     --Some other Destroy logic here.
 end
 ```
@@ -174,7 +173,7 @@ export type MyClassType = {
 
 --Define any functions.
 function MyClass:__new(): ()
-    self:InitializeSuper()
+    NexusObject.__new(self)
     self.MyProperty = "MyProperty"
     self.MyEvent = NexusEvent.new() --From NexusInstance.Event.NexusEvent
 end

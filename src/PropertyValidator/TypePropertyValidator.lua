@@ -58,7 +58,7 @@ Creates a type validator.
 --]]
 function TypePropertyValidator:__new(Type: string): ()
     warn("TypePropertyValidator.new() is deprecated with object-based validators. Use CreateTypeValidator(Type) instead.")
-    self:InitializeSuper()
+    NexusObject.__new(self)
     self.Validator = TypePropertyValidator.CreateTypeValidator(Type)
 end
 

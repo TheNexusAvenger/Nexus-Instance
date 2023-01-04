@@ -29,7 +29,7 @@ export type NexusConnection<T...> = {
 Creates an instance of the connection.
 --]]
 function NexusConnection:__new<T...>(Event: NexusConnectionEvent<T...>, ConnectionFunction): ()
-    self:InitializeSuper()
+    NexusObject.__new(self)
     self.Event = Event
     self.ConnectionFunction = ConnectionFunction
     self.Connected = true

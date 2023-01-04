@@ -40,53 +40,12 @@ local function RawToString(Table: any): string
 end
 
 --[[
-Creates the referebce to a super class.
---]]
-local function CreateSuperReference(Object, SuperClass: {[string]: any}): any
-    --Return nil if there is no super class.
-    if SuperClass == nil then
-        return nil
-    end
-
-    --Create the super reference.
-    local Super = {}
-    local NextSuperReference = CreateSuperReference(Object, SuperClass.__superclass)
-    local SuperMetatable = {}
-    SuperMetatable.__index = function(_, Index)
-        --Return super.
-        --Special case to prevent recursive errors.
-        if Index == "super" then
-            return NextSuperReference
-        end
-
-        --Get the super reference until it doesn't match.
-        local ObjectValue = Object[Index]
-        local CurrentSuperClass = SuperClass
-        local SuperValue = CurrentSuperClass[Index]
-        while ObjectValue == SuperValue do
-            CurrentSuperClass = CurrentSuperClass.__superclass
-            if CurrentSuperClass == nil then break end
-            SuperValue = CurrentSuperClass[Index]
-        end
-
-        --Return the super value that is different or the object value.
-        return SuperValue or Object[Index]
-    end
-    SuperMetatable.__newindex = Object
-    setmetatable(Super, SuperMetatable)
-
-    --Return the super reference.
-    return Super
-end
-
---[[
 Extends a class.
 --]]
 local function ExtendClass(SuperClass: {[string]: any}?) : NexusObject
     --Create the class.
     local Class = {}
     Class.super = SuperClass
-    Class.__superclass = SuperClass
     Class.__index = Class
     setmetatable(Class :: any, SuperClass)
 
@@ -97,11 +56,7 @@ local function ExtendClass(SuperClass: {[string]: any}?) : NexusObject
         --Create the base object.
         local self = {} :: NexusObject
         self.__index = self
-        self.object = self
         self.class = Class
-        if SuperClass ~= nil then
-            self.super = (CreateSuperReference(self, SuperClass) :: any) :: NexusObject
-        end
         setmetatable(self :: any, Class)
 
         --Run the constructor.
@@ -115,7 +70,8 @@ local function ExtendClass(SuperClass: {[string]: any}?) : NexusObject
     Constructor run for the class.
     --]]    
     function Class:__new(...)
-        self:InitializeSuper(...)
+        if not SuperClass then return end
+        (SuperClass :: NexusObject).__new(self)
     end
 
     --Add the metamethod passthrough.
@@ -143,7 +99,6 @@ NexusObject.ClassName = "NexusObject"
 export type NexusObject = {
     --Properties.
     class: {[string]: any},
-    object: NexusObject,
     super: NexusObject,
     ClassName: string,
     [string]: any,
@@ -186,17 +141,6 @@ function NexusObject:__eq(OtherObject: any): boolean
 end
 
 --[[
-Initializes the super class. The paramters given
-by "..." are passed into the constructor of the
-super class (__new(...)). It should be called
-in the constructor of the class.
---]]
-function NexusObject:InitializeSuper(...: any): ()
-    if not self.super then return end
-    self.super:__new(...)
-end
-
---[[
 Sets the class name of the class. Should be
 called staticly (right after NexusObject::Extend).
 --]]
@@ -218,13 +162,12 @@ Returns if the instance is or inherits from a class of that name.
 --]]
 function NexusObject:IsA(ClassName: string): boolean
     --If the class name matches the class name, return true.
-    if self.ClassName == ClassName then
-        return true
-    end
-
-    --If a super class exists, return the result of the super.
-    if self.super then
-        return self.super:IsA(ClassName)
+    local CurrentClass = self
+    while CurrentClass do
+        if CurrentClass.ClassName == ClassName then
+            return true
+        end
+        CurrentClass = CurrentClass.super
     end
 
     --Return false (no match).
