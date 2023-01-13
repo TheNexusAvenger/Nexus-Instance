@@ -109,7 +109,6 @@ export type NexusObject = {
     SetClassName: (self: NexusObject, ClassName: string) -> (NexusObject),
 
     --Methods.
-    InitializeSuper: (...any) -> (),
     IsA: (self: NexusObject, ClassName: string) -> (boolean),
 }
 

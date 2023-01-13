@@ -28,7 +28,7 @@ export type NexusInstance = {
     HidePropertyChanges: (self: NexusInstance, PropertyName: string) -> (),
     HideNextPropertyChange: (self: NexusInstance, PropertyName: string) -> (),
     GetPropertyChangedSignal: (self: NexusInstance, PropertyName: string) -> (NexusEvent.NexusEvent<>),
-    Destroy: () -> (),
+    Destroy: (self: NexusInstance) -> (),
 } & NexusObject.NexusObject
 
 
