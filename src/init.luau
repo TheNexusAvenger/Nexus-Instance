@@ -49,7 +49,7 @@ export type NexusInstance<TObject> = {
 --[[
 Creates an instance version of the given class.
 --]]
-function NexusInstance.ToInstance<TClass, TObject, TConstructor>(Class: TClass): NexusInstanceClass<TClass, TConstructor>
+function NexusInstance.ToInstance<TClass, TConstructor>(Class: TClass): NexusInstanceClass<TClass, TConstructor>
     --Add the constructor.
     local ExtendedClass = (Class :: any) :: NexusInstanceClass<TClass, TConstructor>
     ExtendedClass.new = (function(...)
