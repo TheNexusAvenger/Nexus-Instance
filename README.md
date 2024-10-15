@@ -1,189 +1,303 @@
 # Nexus-Instance
-Nexus Instance is a framework meant to simplify the
-creation of classes in Lua. The framework
-includes a base `NexusObject` class, as well as a more
-powerful `NexusInstance` class to allow for locking
-of properties and a `Changed` event.
+Nexus Instance is a utility for creating custom instances
+with property change events while still providing proper
+typing in Luau.
 
 ## Usage
-### Creating Classes
-Nexus Instance provides 2 classes meant for creating
-classes: `NexusObject` and `NexusInstance`. `NexusInstance`
-extends `NexusObject` to allow for events for when
-properties change, but it has a performance cost.
-Both of them can be extended using the `Extend` method
-and optionally `SetClassName` after that to set the
-class name used with `IsA`. Typing is covered in a
-separate section.
+### Simple Classes
+Classes with metatables are created mostly the same, except:
+- `NexusInstance.ToInstance` is called before using or returning
+  the class.
+- The recommended type of `self` becomes `NexusInstance<Class>`.
 
-```lua
-local MyClass1 = NexusObject:Extend():SetClassName("MyClass1") --NexusObject can be swapped with NexusInstance.
-local MyClass2 = MyClass1:Extend():SetClassName("MyClass2")
+The return type of `NexusInstance.ToInstance` is
+`NexusInstanceClass<TClass, TObject, TConstructor>`, which should be
+casted to. The generic types are:
+- `TClass`: Type of the class without properties. Typically will be
+  `typeof(MyClass)` where `MyClass` is the table of the class.
+- `TObject`: Type of the object with the metatable. This is typically
+  going to be the exported type.
+- `TConstructor`: Type of the constructor function. It should be the
+  arguments of `new(...)` with the return of `NexusInstance<MyClass>`.
 
-local MyObject1 = MyClass1.new() --Creates an instance of MyClass1
-print(MyObject1.ClassName) --MyClass1
-print(MyObject1:IsA("NexusObject")) --true
-print(MyObject1:IsA("MyClass1")) --true
-print(MyObject1:IsA("MyClass2")) --false
-local MyObject2 = MyClass2.new() --Creates an instance of MyClass2
-print(MyObject2.ClassName) --MyClass1
-print(MyObject2:IsA("NexusObject")) --true
-print(MyObject2:IsA("MyClass1")) --true
-print(MyObject2:IsA("MyClass2")) --true
+```luau
+--!strict
+local NexusInstance = require(game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance"))
+
+local TestClass = {}
+TestClass.__index = TestClass
+
+--Exported test class type and Nexus Instance version (optional).
+export type TestClass = {
+    TestProperty: string,
+} & typeof(setmetatable({}, TestClass))
+export type NexusInstanceTestClass = NexusInstance.NexusInstance<TestClass>
+
+--Optional constructor when `new` is called.
+function TestClass.__new(self: NexusInstanceTestClass, Argument: string): ()
+    self.TestProperty = Argument
+end
+
+--Custom function.
+function TestClass.ChangeValue(self: NexusInstanceTestClass, NewValue: string): ()
+    self.TestProperty = NewValue
+end
+
+--Optional destroy function to clear resources.
+--Events are cleaned internally (`Changed`, `GetPropertyChangedSignal`, and `CreateEvent` only).
+--The version returned by NexusInstance.ToInstance will always have a Destroy method.
+function TestClass.Destroy(self: NexusInstanceTestClass): ()
+    --Clear resources.
+end
+
+--Create the class to return in the ModuleScript, or use within the script.
+--The constructor (third generic type) should match inputs for `__new` without the `self`.
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, (Argument: string) -> (NexusInstanceTestClass)>
+
+
+
+--Create and destroy the type.
+local TestObject = ReturnedTestClass.new("TestValue")
+print(TestObject.TestProperty) --"TestValue"
+TestObject:ChangeValue("NewValue")
+print(TestObject.TestProperty) --"NewValue"
+TestObject:Destroy()
 ```
 
-To initialize the class, `__new()` can be defined for each
-class that requires initialization. In the constructor,
-`__new(self, ...)` is used to call the parent constructor.
-**Calling this is not enforced - be aware of missing calls.**
+`__new` and `Destroy` are not required and can be omitted.
 
-```lua
-local MyClass1 = NexusObject:Extend():SetClassName("MyClass1")
-local MyClass2 = MyClass1:Extend():SetClassName("MyClass2")
+```luau
+--!strict
+local NexusInstance = require(game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance"))
 
-function MyClass1:__new(Value1)
-    NexusObject.__new(self) --NexusObject requires no parameters.
-    self.Value1 = Value1
+local TestClass = {}
+TestClass.__index = TestClass
+
+--Exported test class type and Nexus Instance version (optional).
+export type TestClass = {
+    TestProperty: string?, --No constructor initializes this.
+} & typeof(setmetatable({}, TestClass))
+export type NexusInstanceTestClass = NexusInstance.NexusInstance<TestClass>
+
+--Custom function.
+function TestClass.ChangeValue(self: NexusInstanceTestClass, NewValue: string): ()
+    self.TestProperty = NewValue
 end
 
-function MyClass2:__new(Value1, Value2)
-    MyClass1.__new(self, Value1) --MyClass1 requires a paramter.
-    self.Value2 = Value2
-end
+--Create the class to return in the ModuleScript, or use within the script.
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, () -> (NexusInstanceTestClass)>
 
-local MyObject1 = MyClass1.new("MyValue1")
-print(MyObject1.Value1) --MyValue1
-print(MyObject1.Value2) --nil
-local MyObject2 = MyClass2.new("MyValue1", "MyValue2")
-print(MyObject2.Value1) --MyValue1, defined in the constructor for MyClass1
-print(MyObject2.Value2) --MyValue2
+
+
+--Create and destroy the type.
+local TestObject = ReturnedTestClass.new()
+print(TestObject.TestProperty) --nil
+TestObject:ChangeValue("NewValue")
+print(TestObject.TestProperty) --"NewValue"
+TestObject:Destroy()
 ```
 
-In addition to `__new`, custom functions can be defined. Classes
-can override functions of super classes as well. Metatable passthrough
-is also supported.
+### Inheritance
+Inheritance is nearly the same as doing so with metatables, except for
+the calls to `NexusInstance.ToInstance`.
 
-```lua
-local MyClass1 = NexusObject:Extend():SetClassName("MyClass1")
-local MyClass2 = MyClass1:Extend():SetClassName("MyClass2")
+```luau
+--!strict
+local NexusInstance = require(game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance"))
 
-function MyClass1:__new(Value1)
-    NexusObject.__new(self)
-    self.Value1 = Value1
+--Define TestClass1 (potentially in a ModuleScript).
+local TestClass1 = {}
+TestClass1.__index = TestClass1
+
+export type TestClass1 = {
+    TestProperty1: string,
+} & typeof(setmetatable({}, TestClass1))
+export type NexusInstanceTestClass1 = NexusInstance.NexusInstance<TestClass1>
+
+function TestClass1.__new(self: NexusInstanceTestClass1, Input: string)
+    self.TestProperty1 = Input
 end
 
-function MyClass1:GetValue()
-    return self.Value1
+function TestClass1.ChangeValue1(self: NexusInstanceTestClass1, NewValue: string): ()
+    self.TestProperty1 = NewValue
 end
 
-function MyClass2:__new(Value1, Value2)
-    MyClass1.__new(self, Value1)
-    self.Value2 = Value2
+local TestClass1NexusInstance = NexusInstance.ToInstance(TestClass1) :: NexusInstance.NexusInstanceClass<typeof(TestClass1), TestClass1, (Input: string) -> (NexusInstanceTestClass1)>
+
+
+
+--Define TestClass2 (potentially in a different ModuleScript).
+local TestClass2 = {}
+TestClass2.__index = TestClass2
+setmetatable(TestClass2, TestClass1NexusInstance) --TestClass1NexusInstance would be returned instead of TestClass1.
+
+export type TestClass2 = {
+    TestProperty2: string,
+} & typeof(setmetatable({}, TestClass2)) & TestClass1
+export type NexusInstanceTestClass2 = NexusInstance.NexusInstance<TestClass2>
+
+function TestClass2.__new(self: NexusInstanceTestClass2, Input1: string, Input2: string)
+    TestClass1.__new(self, Input1) --Remember to call the parent constructor!
+    self.TestProperty2 = Input2
 end
 
-function MyClass2:GetValue()
-    return self.Value1.."_"..self.Value2
+function TestClass2.ChangeValue2(self: NexusInstanceTestClass2, NewValue: string): ()
+    self.TestProperty2 = NewValue
 end
 
-function MyClass2:__tostring()
-    return self.Value2
-end
+local TestClass2NexusInstance = NexusInstance.ToInstance(TestClass2) :: NexusInstance.NexusInstanceClass<typeof(TestClass2), TestClass2, (Input1: string, Input2: string) -> (NexusInstanceTestClass2)>
+        
 
-local MyObject1 = MyClass1.new("MyValue1")
-print(MyObject1:GetValue()) --MyValue1
-local MyObject2 = MyClass2.new("MyValue1", "MyValue2")
-print(MyObject2:GetValue()) --MyValue1_MyValue2
-print(tostring(MyObject2)) --MyValue2
+
+--Use the classes.
+local TestObject1 = TestClass1NexusInstance.new("TestValue1")
+print(TestObject1.TestProperty1) --"TestValue1"
+TestObject1:ChangeValue1("NewValue1")
+print(TestObject1.TestProperty1) --"NewValue1"
+TestObject1:Destroy()
+
+local TestObject2 = TestClass2NexusInstance.new("TestValue1", "TestValue2")
+print(TestObject2.TestProperty1) --"TestValue1"
+print(TestObject2.TestProperty2) --"TestValue2"
+TestObject2:ChangeValue1("NewValue1")
+TestObject2:ChangeValue2("NewValue2")
+print(TestObject2.TestProperty1) --"NewValue1"
+print(TestObject2.TestProperty2) --"NewValue2"
+TestObject2:Destroy()
 ```
 
-### `NexusInstance` Additions
-`NexusInstance` provides several more functions for managing
-`Changed` events. When a property is changed, the lifecycle
-of the change includes:
-1. Throw an error if the property was set to read-only using `LockProperty(PropertyName: string)`.
-2. Ignore sending any changed events if the value is the same.
-3. Run any property validators added using `AddGenericPropertyValidator(Validator: (string, any) -> (any))`.
-4. Run any property validators added using `AddPropertyValidator(PropertyName: string, Validator: (string, any) -> (any))`.
-5. Update the property.
-6. Run any property finalizers added using `AddGenericPropertyFinalizer(Finalizer: (string, any) -> ())` to bypass deferred events.
-7. Run any property finalizers added using `AddPropertyFinalizer(PropertyName: string, Finalizer: (string, any) -> ())` to bypass deferred events.
-8. Invoke any changed events connected to from `GetPropertyChangedSignal(PropertyName: string)`.
-9. Fire the `Changed` event as long as the property was not hidden using `HidePropertyChanges(PropertyName: string)`.
+### Metatable Passthrough
+Classes can define some metatable methods, which will be passed
+through. `__index` and `__newindex` are not supported for this.
 
-With the changed events is a `Destroy` method that will disconnect
-the changed events. Classes that extend `NexusInstance` should
-make sure to call the `Destroy` method if it is overriden.
+```luau
+--!strict
+local NexusInstance = require(game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance"))
 
-```lua
-local MyClass = NexusInstance:Extend():SetClassName("MyClass")
+local TestClass = {}
+TestClass.__index = TestClass
 
-function MyClass:Destroy()
-    NexusInstance.Destroy(self) --Calls NexusInstance:Destroy()
-    --Some other Destroy logic here.
+--Exported test class type and Nexus Instance version (optional).
+export type TestClass = typeof(setmetatable({}, TestClass))
+export type NexusInstanceTestClass = NexusInstance.NexusInstance<TestClass>
+
+--__tostring metatable method.
+function TestClass.__tostring(self: NexusInstanceTestClass): ()
+    return "TestClass"
 end
+
+--Create the class to return in the ModuleScript, or use within the script.
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, () -> (NexusInstanceTestClass)>
+
+
+
+--Create and destroy the type.
+local TestObject = ReturnedTestClass.new()
+print(tostring(TestObject)) --"TestClass"
+TestObject:Destroy()
 ```
 
-### Events
-`NexusEvent` is included for creating custom events that can
-be listened to and invoked. Unlike `BindableEvent`s, `NexusEvent`
-do not modify the passed variables, but still internally use
-`BindableEvent`s to use Roblox's event scheduling. Typing is
-covered in another section.
+### Property Changes
+Similar to normal Roblox `Instance`s, there is a `Changed` event
+that is fired when any property changes, and `GetPropertyChangedSignal`
+to listen to a specific property changing.
 
-```lua
-local MyEvent = NexusEvent.new()
-MyEvent:Connect(function(Value1, Value2, Value)
-    print(Value1) --1
-    print(Value2) --2
-    print(Value3) --3
+```luau
+TestObject.Changed:Connect(function(PropertyName)
+    print(`Property {PropertyName} changed.`)
+end)
+TestObject:GetPropertyChangedSignal("TestProperty"):Connect(function()
+    print("PropertyName changed.")
+end)
+```
+
+Changed events can be ignored using `HidePropertyChanges`.
+`HideNextPropertyChange` can be used to only hide the next property change.
+
+```luau
+TestObject.Changed:Connect(function(PropertyName)
+    print(`Property {PropertyName} changed.`)
+end)
+TestObject:GetPropertyChangedSignal("TestProperty"):Connect(function()
+    print("PropertyName changed.")
 end)
 
-task.spawn(function()
-    local Value1, Value2, Value3 = MyEvent:Wait()
-    print(Value1) --1
-    print(Value2) --2
-    print(Value3) --3
-end)
-
-MyEvent:Fire(1, 2, 3)
-MyEvent:Disconnect() --Disconnects all connections.
+TestObject:HidePropertyChanges("TestProperty") --This makes it so changed events never invokes for TestProperty.
+TestObject:HideNextPropertyChange("TestProperty") --This makes it so only the next changed event doesn't get invoked for TestProperty.
 ```
 
-### Typing
-Typing for metatables is complicated in Luau. The recommended
-pattern for typing is the following:
+`OnAnyPropertyChanged` and `OnPropertyChanged` also exist. Unlike
+the events, they will immediately invoke after a property change
+(as opposed to waiting on deferred events). They do not respect
+hidden changed events and will always be invoked.
 
-```lua
---Extend the class.
-local MyClass = NexusObject:Extend():SetClassName("MyClass") --Or NexusInstance, or any other class.
+```luau
+TestObject:OnAnyPropertyChanged(function(PropertyName, Value)
+    print(`Property {PropertyName} changed to {Value}.`)
+end)
+TestObject:OnPropertyChanged("TestProperty", function(Value)
+    print(`TestProperty changed to {Value}.`)
+end)
+```
 
---Create the type. The type name is arbitrary (can be MyClass).
---new should be set with the constructor and return, regardless if it matches the super.
---Extend should be set with the class.
---The union of the parent type must be after the type definition.
-export type MyClassType = {
-    new: () -> MyClassType,
-    Extend: (self: MyClassType) -> MyClassType,
+### Property Transformers
+When a property is set, it is able to be transformed before
+being stored and invoked with changed events. Generic transforms
+will always run before property-speicifc ones.
 
-    --Custom properties and methods can be defined here.
-    MyProperty: string,
-    MyEvent: NexusEvent.NexusEvent<string, number>, --NexusEvents support typing.
-    MyMethod: (self: MyClassType, Value: string) -> (number),
-} & NexusObject.NexusObject --Or NexusInstance.NexusInstance, or any other type definition.
+```luau
+TestObject:AddGenericPropertyTransform(function(Index, Value)
+    return `{Value}_{Index}_1`
+end)
+TestObject:OnAnyPropertyChanged("TestProperty", function(Value)
+    return `{Value}_2`
+end)
 
---Define any functions.
-function MyClass:__new(): ()
-    NexusObject.__new(self)
-    self.MyProperty = "MyProperty"
-    self.MyEvent = NexusEvent.new() --From NexusInstance.Event.NexusEvent
+TestObject.TestProperty = "NewValue"
+print(TestObject.TestProperty) --"NewValue_TestProperty_1_2"
+```
+
+### Custom Events
+`TypedEvent` exists for custom events. Compared to `BindableEvent`:
+- `TypedEvent`s have typing for the arguments.
+- Arguments that are passed retain their original table/function
+  references, instead of being encoded away.
+
+`CreateEvent` is always recommended unless being used outside
+of an instance, since `CreateEvent` will handle disconnecting
+the event when the instance is destroyed.
+
+```luau
+--!strict
+local NexusInstance = require(game:GetService("ReplicatedStorage"):WaitForChild("NexusInstance"))
+
+local TestClass = {}
+TestClass.__index = TestClass
+
+--Exported test class type and Nexus Instance version (optional).
+export type TestClass = {
+    TestEvent: NexusInstance.TypedEvent<string>,
+} & typeof(setmetatable({}, TestClass))
+export type NexusInstanceTestClass = NexusInstance.NexusInstance<TestClass>
+
+--Optional constructor when `new` is called.
+function TestClass.__new(self: NexusInstanceTestClass): ()
+    self.TestEvent = self:CreateEvent() :: NexusInstance.TypedEvent<string>
 end
 
-function MyClass:MyMethod(Value: string): number
-    return 5
-end
+--Create the class to return in the ModuleScript, or use within the script.
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, () -> (NexusInstanceTestClass)>
 
---Return the class with the type casted.
-return MyClass :: MyClassType
+
+
+--Create and destroy the type.
+local TestObject = ReturnedTestClass.new()
+TestObject.TestEvent:Connect(function(Message)
+    print(Message)
+end)
+TestObject.TestEvent:Fire("Test message") --Prints "Test message"
+task.wait() --Required with deferred events, otherwise, Destroy beats the event being fired.
+TestObject:Destroy() --Disconnects TestEvent.
 ```
 
 ## Contributing
@@ -191,4 +305,4 @@ Both issues and pull requests are accepted for this project.
 
 ## License
 Nexus Instance is available under the terms of the MIT 
-Licence. See [LICENSE](LICENSE) for details.
+License. See [LICENSE](LICENSE) for details.
