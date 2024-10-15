@@ -6,7 +6,10 @@
             "$className": "ReplicatedStorage",
             "NexusInstance": {
                 "$path": "."
-            },
+            }
+        },
+        "TestService": {
+            "$className": "TestService",
             "NexusInstanceTests": {
                 "$path": "./test"
             }
