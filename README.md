@@ -294,7 +294,6 @@ TestObject.TestEvent:Connect(function(Message)
     print(Message)
 end)
 TestObject.TestEvent:Fire("Test message") --Prints "Test message"
-task.wait() --Required with deferred events, otherwise, Destroy beats the event being fired.
 TestObject:Destroy() --Disconnects TestEvent.
 ```
 

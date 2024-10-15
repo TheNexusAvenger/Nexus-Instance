@@ -233,17 +233,19 @@ end
 Destroys the instance.
 --]]
 function NexusInstance.Destroy<T>(self: NexusInstance<T>): ()
-    --Disconnect the events.
-    for _, Event in self.Events do
-        (Event :: TypedEvent<unknown>):Destroy()
-    end
-    self.Events = {}
-
     --Call the class's destroy event.
     local DestroyFunction = (self.BaseClass :: any).Destroy
     if DestroyFunction then
         DestroyFunction(self)
     end
+
+    --Disconnect the events.
+    task.defer(function()
+        for _, Event in self.Events do
+            (Event :: TypedEvent<unknown>):Destroy()
+        end
+        self.Events = {}
+    end)
 end
 
 

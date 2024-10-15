@@ -213,6 +213,17 @@ return function()
             task.wait()
             expect(FiredString).to.equal(nil)
         end)
+
+        it("should allow for events to complete when destroying.", function()
+            local FiredString = nil
+            TestObject:GetPropertyChangedSignal("TestProperty"):Connect(function()
+                FiredString = TestObject.TestProperty
+            end)
+
+            TestObject:Destroy()
+            task.wait()
+            expect(FiredString).to.equal("DESTROYED")
+        end)
     end)
 
     describe("A NexusInstance with a simple class with no constructor or destroy", function()
