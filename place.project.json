@@ -10,7 +10,7 @@
         },
         "TestService": {
             "$className": "TestService",
-            "NexusInstanceTests": {
+            "NexusInstance.spec": {
                 "$path": "./test"
             }
         }
