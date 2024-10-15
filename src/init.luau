@@ -27,7 +27,7 @@ local NexusInstance = {}
 
 export type TypedEvent<T...> = TypedEvent.TypedEvent<T...>
 
-export type NexusInstanceClass<TClass, TObject, TConstructor> = {
+export type NexusInstanceClass<TClass, TConstructor> = {
     new: TConstructor
 } & TClass
 
@@ -49,9 +49,9 @@ export type NexusInstance<TObject> = {
 --[[
 Creates an instance version of the given class.
 --]]
-function NexusInstance.ToInstance<TClass, TObject, TConstructor>(Class: TClass): NexusInstanceClass<TClass, TObject, TConstructor>
+function NexusInstance.ToInstance<TClass, TObject, TConstructor>(Class: TClass): NexusInstanceClass<TClass, TConstructor>
     --Add the constructor.
-    local ExtendedClass = (Class :: any) :: NexusInstanceClass<TClass, TObject, TConstructor>
+    local ExtendedClass = (Class :: any) :: NexusInstanceClass<TClass, TConstructor>
     ExtendedClass.new = (function(...)
         --Prepare the object.
         local ChangedEvent = (TypedEvent.new() :: any) :: TypedEvent<string>

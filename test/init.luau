@@ -30,7 +30,7 @@ return function()
             self.TestProperty = "DESTROYED"
         end
 
-        local TestClass1NexusInstance = NexusInstance.ToInstance(TestClass1) :: NexusInstance.NexusInstanceClass<typeof(TestClass1), TestClass1, (Input: string) -> (NexusInstance.NexusInstance<TestClass1>)>
+        local TestClass1NexusInstance = NexusInstance.ToInstance(TestClass1) :: NexusInstance.NexusInstanceClass<typeof(TestClass1), (Input: string) -> (NexusInstance.NexusInstance<TestClass1>)>
         local TestObject = nil
         beforeEach(function()
             TestObject = TestClass1NexusInstance.new("TestValue")
@@ -221,7 +221,7 @@ return function()
 
         type TestClass2 = typeof(setmetatable({}, TestClass2))
 
-        local TestClass2NexusInstance = NexusInstance.ToInstance(TestClass2) :: NexusInstance.NexusInstanceClass<typeof(TestClass2), TestClass2, (Input: string) -> (NexusInstance.NexusInstance<TestClass2>)>
+        local TestClass2NexusInstance = NexusInstance.ToInstance(TestClass2) :: NexusInstance.NexusInstanceClass<typeof(TestClass2), (Input: string) -> (NexusInstance.NexusInstance<TestClass2>)>
         local TestObject = nil
         beforeEach(function()
             TestObject = TestClass2NexusInstance.new("TestValue")
@@ -264,7 +264,7 @@ return function()
             return `TestClass3_{self.TestProperty1}`
         end
 
-        local TestClass3NexusInstance = NexusInstance.ToInstance(TestClass3) :: NexusInstance.NexusInstanceClass<typeof(TestClass3), TestClass3, (Input: string) -> (NexusInstance.NexusInstance<TestClass3>)>
+        local TestClass3NexusInstance = NexusInstance.ToInstance(TestClass3) :: NexusInstance.NexusInstanceClass<typeof(TestClass3), (Input: string) -> (NexusInstance.NexusInstance<TestClass3>)>
         
         local TestClass4 = {}
         TestClass4.__index = TestClass4
@@ -287,7 +287,7 @@ return function()
             return `TestClass4_{self.TestProperty1}_{self.TestProperty2}`
         end
 
-        local TestClass4NexusInstance = NexusInstance.ToInstance(TestClass4) :: NexusInstance.NexusInstanceClass<typeof(TestClass4), TestClass4, (Input1: string, Input2: string) -> (NexusInstance.NexusInstance<TestClass4>)>
+        local TestClass4NexusInstance = NexusInstance.ToInstance(TestClass4) :: NexusInstance.NexusInstanceClass<typeof(TestClass4), (Input1: string, Input2: string) -> (NexusInstance.NexusInstance<TestClass4>)>
         
         local TestObject = nil
         beforeEach(function()

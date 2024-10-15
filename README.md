@@ -15,8 +15,6 @@ The return type of `NexusInstance.ToInstance` is
 casted to. The generic types are:
 - `TClass`: Type of the class without properties. Typically will be
   `typeof(MyClass)` where `MyClass` is the table of the class.
-- `TObject`: Type of the object with the metatable. This is typically
-  going to be the exported type.
 - `TConstructor`: Type of the constructor function. It should be the
   arguments of `new(...)` with the return of `NexusInstance<MyClass>`.
 
@@ -51,8 +49,8 @@ function TestClass.Destroy(self: NexusInstanceTestClass): ()
 end
 
 --Create the class to return in the ModuleScript, or use within the script.
---The constructor (third generic type) should match inputs for `__new` without the `self`.
-local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, (Argument: string) -> (NexusInstanceTestClass)>
+--The constructor (second generic type) should match inputs for `__new` without the `self`.
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), (Argument: string) -> (NexusInstanceTestClass)>
 
 
 
@@ -85,7 +83,7 @@ function TestClass.ChangeValue(self: NexusInstanceTestClass, NewValue: string): 
 end
 
 --Create the class to return in the ModuleScript, or use within the script.
-local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, () -> (NexusInstanceTestClass)>
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), () -> (NexusInstanceTestClass)>
 
 
 
@@ -122,7 +120,7 @@ function TestClass1.ChangeValue1(self: NexusInstanceTestClass1, NewValue: string
     self.TestProperty1 = NewValue
 end
 
-local TestClass1NexusInstance = NexusInstance.ToInstance(TestClass1) :: NexusInstance.NexusInstanceClass<typeof(TestClass1), TestClass1, (Input: string) -> (NexusInstanceTestClass1)>
+local TestClass1NexusInstance = NexusInstance.ToInstance(TestClass1) :: NexusInstance.NexusInstanceClass<typeof(TestClass1), (Input: string) -> (NexusInstanceTestClass1)>
 
 
 
@@ -145,7 +143,7 @@ function TestClass2.ChangeValue2(self: NexusInstanceTestClass2, NewValue: string
     self.TestProperty2 = NewValue
 end
 
-local TestClass2NexusInstance = NexusInstance.ToInstance(TestClass2) :: NexusInstance.NexusInstanceClass<typeof(TestClass2), TestClass2, (Input1: string, Input2: string) -> (NexusInstanceTestClass2)>
+local TestClass2NexusInstance = NexusInstance.ToInstance(TestClass2) :: NexusInstance.NexusInstanceClass<typeof(TestClass2), (Input1: string, Input2: string) -> (NexusInstanceTestClass2)>
         
 
 
@@ -187,7 +185,7 @@ function TestClass.__tostring(self: NexusInstanceTestClass): ()
 end
 
 --Create the class to return in the ModuleScript, or use within the script.
-local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, () -> (NexusInstanceTestClass)>
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), () -> (NexusInstanceTestClass)>
 
 
 
@@ -286,7 +284,7 @@ function TestClass.__new(self: NexusInstanceTestClass): ()
 end
 
 --Create the class to return in the ModuleScript, or use within the script.
-local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), TestClass, () -> (NexusInstanceTestClass)>
+local ReturnedTestClass = NexusInstance.ToInstance(TestClass) :: NexusInstance.NexusInstanceClass<typeof(TestClass), () -> (NexusInstanceTestClass)>
 
 
 
