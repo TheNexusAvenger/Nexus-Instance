@@ -11,7 +11,7 @@ Classes with metatables are created mostly the same, except:
 - The recommended type of `self` becomes `NexusInstance<Class>`.
 
 The return type of `NexusInstance.ToInstance` is
-`NexusInstanceClass<TClass, TObject, TConstructor>`, which should be
+`NexusInstanceClass<TClass, TConstructor>`, which should be
 casted to. The generic types are:
 - `TClass`: Type of the class without properties. Typically will be
   `typeof(MyClass)` where `MyClass` is the table of the class.
