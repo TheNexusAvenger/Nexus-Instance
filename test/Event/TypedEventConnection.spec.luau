@@ -42,7 +42,13 @@ return function()
             expect(DisconnectedEventLastCall).to.equal(TestTypedEventConnection)
         end)
 
-        it("should not disconnect disconnected events..", function()
+        it("should destroy connections.", function()
+            TestTypedEventConnection:Destroy()
+            expect(TestTypedEventConnection.Connected).to.equal(false)
+            expect(DisconnectedEventLastCall).to.equal(TestTypedEventConnection)
+        end)
+
+        it("should not disconnect disconnected events.", function()
             TestTypedEventConnection.Connected = false
             TestTypedEventConnection:Disconnect()
             expect(DisconnectedEventLastCall).to.equal(nil)

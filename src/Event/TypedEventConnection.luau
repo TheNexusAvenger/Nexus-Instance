@@ -48,6 +48,13 @@ function TypedEventConnection.Disconnect<T...>(self: TypedEventConnection<T...>)
     self.ParentEvent:Disconnected(self)
 end
 
+--[[
+Destroys the connection.
+--]]
+function TypedEventConnection.Destroy<T...>(self: TypedEventConnection<T...>): ()
+    self:Disconnect()
+end
+
 
 
 return TypedEventConnection
