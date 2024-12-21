@@ -2,16 +2,17 @@
 --!strict
 
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
 local TypedEventConnection = require(script.Parent:WaitForChild("TypedEventConnection"))
 
 local TypedEvent = {}
+TypedEvent.LastArguments = {} :: {[string]: any}
+TypedEvent.QueuedClearArguments = {} :: {[string]: boolean}
 TypedEvent.__index = TypedEvent
 
 export type TypedEvent<T...> = {
     BindableEvent: BindableEvent,
-    LastArgumentsStrong: {[string]: any},
-    LastArguments: {[string]: any},
     Connections: {[TypedEventConnection.TypedEventConnection<T...>]: RBXScriptConnection},
     CurrentWaits: number,
 } & typeof(setmetatable({}, TypedEvent))
@@ -23,18 +24,11 @@ Creates a typed event.
 --]]
 function TypedEvent.new<T...>(): TypedEvent<T...>
     --Create the object.
-    --For deferred events, the arguments need to be stored. LastArgumentsStrong will
-    --keep the reference around and prevent it from being garbage collected until only
-    --LastArguments references it. Ideally, they will be used at the same time if both
-    --:Connect(), :Once(), and :Wait() are used.
     local self = setmetatable({
         BindableEvent = Instance.new("BindableEvent"),
-        LastArgumentsStrong = {},
-        LastArguments = {},
         Connections = {},
         CurrentWaits = 0
     }, TypedEvent) :: TypedEvent<T...>
-    setmetatable(self.LastArguments, {__mode="v"})
 
     --Return the object.
     return self
@@ -50,12 +44,7 @@ function TypedEvent.Connect<T...>(self: TypedEvent<T...>, Callback: (T...) -> ()
 
     --Set up the bindable event.
     local BindableEventConnection = self.BindableEvent.Event:Connect(function(UUID)
-        --Get the arguments.
-        local Arguments = self.LastArguments[UUID]
-        self.LastArgumentsStrong[UUID] = nil
-
-        --Fire the event.
-        Connection:Fire(table.unpack(Arguments))
+        Connection:Fire(table.unpack(self.LastArguments[UUID]))
     end)
 
     --Store the connections.
@@ -92,9 +81,7 @@ function TypedEvent.Wait<T...>(self: TypedEvent<T...>): T...
     self.CurrentWaits = self.CurrentWaits - 1
 
     --Return the arguments.
-    local Arguments = self.LastArguments[UUID]
-    self.LastArgumentsStrong[UUID] = nil
-    return table.unpack(Arguments)
+    return table.unpack(self.LastArguments[UUID])
 end
 
 --[[
@@ -102,14 +89,18 @@ Fires the event.
 --]]
 function TypedEvent.Fire<T...>(self: TypedEvent<T...>, ...: T...): ()
     --Ignore if there are no connections.
-    --If continued, self.LastArgumentsStrong will be populated and never cleared, leading to a memory leak.
     if next(self.Connections) == nil and self.CurrentWaits <= 0 then return end
 
     --Store the arguments.
+    --For deferred events, the arguments need to be stored.
     local UUID = HttpService:GenerateGUID()
     local Arguments = table.pack(...)
-    self.LastArgumentsStrong[UUID] = Arguments
     self.LastArguments[UUID] = Arguments
+
+    --Queue clearing the arguments.
+    task.defer(function()
+        TypedEvent.QueuedClearArguments[UUID] = true
+    end)
 
     --Invoke the event.
     self.BindableEvent:Fire(UUID)
@@ -136,6 +127,18 @@ function TypedEvent.Destroy<T...>(self: TypedEvent<T...>): ()
     end
     self.BindableEvent:Destroy()
 end
+
+
+
+--Clear arguments in the background.
+RunService.Heartbeat:Connect(function()
+    local QueuedClearArguments = TypedEvent.QueuedClearArguments
+    TypedEvent.QueuedClearArguments = {}
+
+    for Key, _ in QueuedClearArguments do
+        TypedEvent.LastArguments[Key] = nil
+    end
+end)
 
 
 

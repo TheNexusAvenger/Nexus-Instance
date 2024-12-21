@@ -153,10 +153,9 @@ return function()
 
         it("should not fire events with no connections.", function()
             TestEvent:Fire("Test1", "Test2", {})
-            local Index1, _ = next(TestEvent.LastArgumentsStrong)
-            local Index2, _ = next(TestEvent.LastArguments)
-            expect(Index1).to.equal(nil)
-            expect(Index2).to.equal(nil)
+            task.wait(0.1)
+            local Index, _ = next(TestEvent.LastArguments)
+            expect(Index).to.equal(nil)
         end)
     end)
 end
