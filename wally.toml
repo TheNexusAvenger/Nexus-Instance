@@ -1,0 +1,15 @@
+[package]
+name = "thenexusavenger/nexus-instance"
+repository = "https://github.com/TheNexusAvenger/Nexus-Instance"
+description = "Utility for creating custom instances in Luau."
+license = "MIT"
+authors = ["TheNexusAvenger"]
+version = "4.1.1"
+
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+exclude = ["**"]
+include = ["src", "src/*", "default.project.json", "wally.toml"]
+
+[dependencies]
