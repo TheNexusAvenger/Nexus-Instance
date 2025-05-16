@@ -6,6 +6,19 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local NexusInstance = require(ReplicatedStorage:WaitForChild("NexusInstance"))
 
 return function()
+    --Events cleared on Destroy are invoked with task.defer, which will fire events in immediate events
+    --before the task.defer, but not with deferred events.
+    local IsImmediateMode = false
+    beforeAll(function()
+        local EventImmediatelyCalled = false
+        local Event = Instance.new("BindableEvent")
+        Event.Event:Once(function()
+            EventImmediatelyCalled = true
+        end)
+        Event:Fire()
+        IsImmediateMode = EventImmediatelyCalled
+    end)
+
     describe("A NexusInstance with a simple class", function()
         local TestClass1 = {}
         TestClass1.__index = TestClass1
@@ -209,6 +222,7 @@ return function()
             end)
 
             TestObject:Destroy()
+            if IsImmediateMode then task.wait() end
             TestEvent:Fire("Test")
             task.wait()
             expect(FiredString).to.equal(nil)
@@ -249,6 +263,7 @@ return function()
             end)
 
             TestObject:Destroy()
+            if IsImmediateMode then task.wait() end
             TestEvent:Fire("Test")
             task.wait()
             expect(FiredString).to.equal(nil)

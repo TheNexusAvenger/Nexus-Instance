@@ -9,7 +9,7 @@ return function()
     describe("A TypedEvent", function()
         local TestEvent = nil
         beforeEach(function()
-            TestEvent = TypedEvent.new() :: TypedEvent.TypedEvent<string, string?, {[number]: string}>
+            TestEvent = (TypedEvent.new() :: any) :: TypedEvent.TypedEvent<string, string?, {[number]: string}>
         end)
 
         afterEach(function()

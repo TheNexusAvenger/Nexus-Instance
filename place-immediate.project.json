@@ -5,7 +5,7 @@
         "Workspace": {
             "$ignoreUnknownInstances": true,
             "$properties": {
-                "SignalBehavior": "Deferred"
+                "SignalBehavior": "Immediate"
             }
         },
         "ReplicatedStorage": {
