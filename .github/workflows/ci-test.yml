@@ -1,0 +1,31 @@
+name: CI Test
+
+# Run the build on push and weekly.
+on:
+  push:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout the repository.
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    # Run Aftman to install Rojo.
+    - name: Install Aftman
+      uses: ok-nick/setup-aftman@v0.4.2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    # Run Avant.
+    - name: Run Avant Open Cloud (Deferred Events)
+      uses: Avant-Rbx/Avant-Open-Cloud@main
+      env:
+        OPEN_CLOUD_TEST_API_KEY: ${{ secrets.OPEN_CLOUD_TEST_API_KEY }}
+    - name: Run Avant Open Cloud (Immediate Events)
+      uses: Avant-Rbx/Avant-Open-Cloud@main
+      env:
+        OPEN_CLOUD_TEST_API_KEY: ${{ secrets.OPEN_CLOUD_TEST_API_KEY }}
+      with:
+        configuration-file: avant-immediate.json
