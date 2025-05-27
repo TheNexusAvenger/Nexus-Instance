@@ -4,7 +4,7 @@ repository = "https://github.com/TheNexusAvenger/Nexus-Instance"
 description = "Utility for creating custom instances in Luau."
 license = "MIT"
 authors = ["TheNexusAvenger"]
-version = "4.1.1"
+version = "4.1.2"
 
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"

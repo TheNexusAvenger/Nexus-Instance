@@ -24,6 +24,7 @@ local METATABLE_METHODS = {
 local TypedEvent = require(script:WaitForChild("Event"):WaitForChild("TypedEvent"))
 
 local NexusInstance = {}
+NexusInstance.TypedEvent = TypedEvent
 
 export type TypedEvent<T...> = TypedEvent.TypedEvent<T...>
 
