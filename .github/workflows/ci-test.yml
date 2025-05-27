@@ -20,11 +20,11 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     # Run Avant.
     - name: Run Avant Open Cloud (Deferred Events)
-      uses: Avant-Rbx/Avant-Open-Cloud@main
+      uses: Avant-Rbx/Avant-Open-Cloud@V.1.0.0
       env:
         OPEN_CLOUD_TEST_API_KEY: ${{ secrets.OPEN_CLOUD_TEST_API_KEY }}
     - name: Run Avant Open Cloud (Immediate Events)
-      uses: Avant-Rbx/Avant-Open-Cloud@main
+      uses: Avant-Rbx/Avant-Open-Cloud@V.1.0.0
       env:
         OPEN_CLOUD_TEST_API_KEY: ${{ secrets.OPEN_CLOUD_TEST_API_KEY }}
       with:
