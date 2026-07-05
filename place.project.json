@@ -18,6 +18,12 @@
             "$className": "TestService",
             "NexusInstance.spec": {
                 "$path": "./test"
+            },
+            "AvantIgnoredPaths": {
+                "$className": "StringValue",
+                "$properties": {
+                    "Value": "[\"StarterPlayer.StarterPlayerScripts.PlayerModule\"]"
+                }
             }
         }
     }
